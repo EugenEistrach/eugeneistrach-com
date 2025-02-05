@@ -1,0 +1,29 @@
+---
+import BaseHead from "./BaseHead.astro";
+import Footer from "./Footer.astro";
+import { ClientRouter } from "astro:transitions";
+
+import "@fontsource-variable/geist-mono";
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<html lang="en" class="min-h-screen">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClientRouter />
+  </head>
+  <body
+    class="font-atkinson bg-gradient-to-b from-gray-50 to-white text-gray-700 text-lg"
+  >
+    <main class="max-w-5xl mx-auto px-6 py-8">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>
