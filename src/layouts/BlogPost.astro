@@ -20,7 +20,7 @@ const hasLlmVersion = !!url; // Replace with actual logic to check if LLM versio
 <Layout title={title} description={description}>
   <div class="relative xl:flex xl:justify-center xl:gap-8">
     <div class="">
-      <TableOfContents client:load />
+      <TableOfContents client:only />
     </div>
     <div class="mx-auto w-full">
       <div class="flex items-center justify-between mb-8">
