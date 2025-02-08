@@ -2,7 +2,7 @@ import type { PropsWithChildren } from "react";
 
 export function Disclaimer({ children }: PropsWithChildren) {
   return (
-    <div className="my-4 rounded border-l-4 border-l-amber-500 border-t border-r border-b border-amber-200/30 bg-amber-50/5 p-3 dark:bg-amber-950/5">
+    <div className="my-4 rounded border-l-4 border-l-amber-500 border-t border-r border-b border-amber-200/30 bg-amber-50/5 p-3 ">
       <div className="flex items-center gap-2">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -17,13 +17,11 @@ export function Disclaimer({ children }: PropsWithChildren) {
             clipRule="evenodd"
           />
         </svg>
-        <span className="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+        <span className="text-xs font-semibold uppercase tracking-wider text-amber-700 ">
           Important
         </span>
       </div>
-      <div className="mt-1.5 text-gray-600 dark:text-gray-300 text-sm">
-        {children}
-      </div>
+      <div className="mt-1.5 text-gray-600  text-sm">{children}</div>
     </div>
   );
 }

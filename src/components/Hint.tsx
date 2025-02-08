@@ -7,11 +7,11 @@ interface HintProps extends PropsWithChildren {
 export function Hint({ children, href }: HintProps) {
   const Content = () => (
     <div
-      className="flex items-center gap-2 rounded-lg bg-gray-50 dark:bg-gray-900/50 py-3 text-sm
-    md:text-base text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300"
+      className="flex items-center gap-2 rounded-lg bg-gray-50  py-3 text-sm
+    md:text-base text-gray-500  group-hover:text-gray-700 "
     >
       <svg
-        className="h-5 w-5 flex-shrink-0 text-gray-400 dark:text-gray-500"
+        className="h-5 w-5 flex-shrink-0 text-gray-400 "
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"

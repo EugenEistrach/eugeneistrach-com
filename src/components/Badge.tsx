@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import * as Tooltip from "@radix-ui/react-tooltip";
+import * as HoverCard from "@radix-ui/react-hover-card";
 import type { ReactNode } from "react";
 
 export interface BadgeItem {
@@ -33,19 +33,18 @@ export function Badge({ label, color, Icon, description }: BadgeItem) {
 
   if (description) {
     return (
-      <Tooltip.Provider delayDuration={100}>
-        <Tooltip.Root>
-          <Tooltip.Trigger asChild>{badge}</Tooltip.Trigger>
-          <Tooltip.Portal>
-            <Tooltip.Content
-              className="z-50 overflow-hidden rounded-lg bg-white/80 backdrop-blur-lg px-4 py-3 text-sm text-gray-950 shadow-lg max-w-[300px] animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2"
-              sideOffset={5}
-            >
-              {description}
-            </Tooltip.Content>
-          </Tooltip.Portal>
-        </Tooltip.Root>
-      </Tooltip.Provider>
+      <HoverCard.Root openDelay={100} closeDelay={0}>
+        <HoverCard.Trigger asChild>{badge}</HoverCard.Trigger>
+        <HoverCard.Portal>
+          <HoverCard.Content
+            className="z-50 overflow-hidden rounded-lg bg-white/80 backdrop-blur-lg px-4 py-3 text-sm text-gray-950 shadow-lg max-w-[300px] animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2"
+            sideOffset={5}
+          >
+            {description}
+            <HoverCard.Arrow className="fill-white/80 backdrop-blur-lg" />
+          </HoverCard.Content>
+        </HoverCard.Portal>
+      </HoverCard.Root>
     );
   }
 

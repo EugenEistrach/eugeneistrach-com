@@ -6,13 +6,13 @@ interface NoteProps extends PropsWithChildren {
 
 export function Note({ children, title = "Note" }: NoteProps) {
   return (
-    <div className="my-6 rounded-lg border border-yellow-200/30 bg-yellow-50/10 p-4 dark:bg-yellow-950/10">
+    <div className="my-6 rounded-lg border border-yellow-200/30 bg-yellow-50/10 p-4 ">
       <div className="flex items-center gap-2">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
           fill="currentColor"
-          className="h-5 w-5 text-yellow-600 dark:text-yellow-500"
+          className="h-5 w-5 text-yellow-600 "
         >
           <path
             fillRule="evenodd"
@@ -20,11 +20,9 @@ export function Note({ children, title = "Note" }: NoteProps) {
             clipRule="evenodd"
           />
         </svg>
-        <span className="font-medium text-yellow-800 dark:text-yellow-200">
-          {title}
-        </span>
+        <span className="font-medium text-yellow-800 ">{title}</span>
       </div>
-      <div className="mt-2 text-gray-600 dark:text-gray-300">{children}</div>
+      <div className="mt-2 text-gray-600 ">{children}</div>
     </div>
   );
 }
