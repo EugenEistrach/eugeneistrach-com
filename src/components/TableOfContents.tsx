@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Drawer, DrawerContent, DrawerTrigger } from "./ui/drawer";
+import { Drawer, DrawerTrigger, DrawerContent } from "./Drawer";
 
 interface TocItem {
   id: string;

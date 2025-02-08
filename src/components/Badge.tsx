@@ -1,7 +1,6 @@
 import { motion } from "motion/react";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import type { ReactNode } from "react";
-import { useState } from "react";
 
 export interface BadgeItem {
   label: string;
