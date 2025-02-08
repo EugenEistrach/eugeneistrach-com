@@ -30,7 +30,7 @@ export const GET: APIRoute = async () => {
 
     // Fetch currently playing
     const response = await fetch(
-      `https://api.spotify.com/v1/me/player/currently-playing?_=${Date.now()}`,
+      "https://api.spotify.com/v1/me/player/currently-playing",
       {
         headers: {
           Authorization: `Bearer ${access_token}`,
@@ -61,13 +61,9 @@ export const GET: APIRoute = async () => {
       headers: {
         "Content-Type": "application/json",
         "Cache-Control":
-          "no-store, no-cache, must-revalidate, proxy-revalidate",
-        "CDN-Cache-Control": "no-store",
-        "Vercel-CDN-Cache-Control": "no-store",
-        "Surrogate-Control": "no-store",
-        Pragma: "no-cache",
-        Expires: "0",
-        Vary: "*",
+          "public, max-age=5, s-maxage=5, stale-while-revalidate=10",
+        "CDN-Cache-Control": "public, max-age=5, s-maxage=5",
+        "Vercel-CDN-Cache-Control": "public, max-age=5, s-maxage=5",
       },
     });
   } catch (error) {
@@ -80,14 +76,9 @@ export const GET: APIRoute = async () => {
         status: 500,
         headers: {
           "Content-Type": "application/json",
-          "Cache-Control":
-            "no-store, no-cache, must-revalidate, proxy-revalidate",
+          "Cache-Control": "no-store",
           "CDN-Cache-Control": "no-store",
           "Vercel-CDN-Cache-Control": "no-store",
-          "Surrogate-Control": "no-store",
-          Pragma: "no-cache",
-          Expires: "0",
-          Vary: "*",
         },
       }
     );
