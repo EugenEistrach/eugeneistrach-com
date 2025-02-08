@@ -8,6 +8,15 @@
           "value": "public, max-age=5, s-maxage=5, stale-while-revalidate=10"
         }
       ]
+    },
+    {
+      "source": "/.well-known/discord",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain"
+        }
+      ]
     }
   ]
 }
