@@ -6,17 +6,8 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=5, s-maxage=5, stale-while-revalidate=10"
-        },
-        {
-          "key": "Vercel-CDN-Cache-Control",
-          "value": "public, max-age=5, s-maxage=5"
         }
       ]
     }
-  ],
-  "functions": {
-    "api/spotify-now-playing": {
-      "maxDuration": 10
-    }
-  }
+  ]
 }
