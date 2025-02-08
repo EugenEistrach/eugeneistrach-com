@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Drawer, DrawerTrigger, DrawerContent } from "./Drawer";
+import { Drawer, DrawerTrigger, DrawerContent, DrawerTitle } from "./Drawer";
 
 interface TocItem {
   id: string;
@@ -131,9 +131,9 @@ export default function TableOfContents() {
         </DrawerTrigger>
 
         <DrawerContent>
-          <div className="sticky top-0 z-20 bg-white px-3 py-3 border-b rounded-t-lg">
+          <DrawerTitle className="sticky top-0 z-20 bg-white px-3 py-3 border-b rounded-t-lg">
             <p className="font-medium text-gray-900">Table of Contents</p>
-          </div>
+          </DrawerTitle>
           <div className="relative">
             <div
               className={`absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-white to-transparent z-10 pointer-events-none transition-opacity ${
