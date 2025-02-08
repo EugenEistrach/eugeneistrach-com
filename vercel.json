@@ -1,14 +1,14 @@
 {
   "headers": [
     {
-      "source": "/api/spotify-now-playing",
+      "source": "/api/spotify-now-playing(.*)",
       "headers": [
         {
           "key": "Cache-Control",
           "value": "public, max-age=5, s-maxage=5, stale-while-revalidate=10"
         },
         {
-          "key": "Vercel-CDN-Cache-Control",
+          "key": "CDN-Cache-Control",
           "value": "public, max-age=5, s-maxage=5"
         }
       ]
