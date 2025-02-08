@@ -6,6 +6,7 @@ import {
   Zap,
   Wrench,
   Sparkles,
+  Music,
 } from "lucide-react";
 import type { BadgeItem } from "./Badge";
 import { ExpandableSection } from "./ExpandableSection";
@@ -17,19 +18,19 @@ const passions: BadgeItem[] = [
     color: "bg-emerald-100 text-emerald-700",
     description: (
       <div className="space-y-3">
-        <p>Exploring new ways to solve everyday problems with technology.</p>
-        <p>Always excited to try out fresh ideas and approaches.</p>
+        <p>Fascinated by world-changing ideas.</p>
+        <p>Waiting for flying cars (can't drive normal ones anyway).</p>
       </div>
     ),
   },
   {
     Icon: Telescope,
-    label: "Tech Exploration",
+    label: "Code Explorer",
     color: "bg-cyan-100 text-cyan-700",
     description: (
       <div className="space-y-3">
-        <p>Discovering and learning about new technologies and tools.</p>
-        <p>Understanding how they can make our lives better.</p>
+        <p>Love trying out new tech.</p>
+        <p>My GitHub is a graveyard of experiments.</p>
       </div>
     ),
   },
@@ -39,8 +40,8 @@ const passions: BadgeItem[] = [
     color: "bg-indigo-100 text-indigo-700",
     description: (
       <div className="space-y-3">
-        <p>Staying active and healthy through regular running.</p>
-        <p>Finding the perfect balance between work and wellness.</p>
+        <p>Running from my problems.</p>
+        <p>Literally.</p>
       </div>
     ),
   },
@@ -50,8 +51,8 @@ const passions: BadgeItem[] = [
     color: "bg-fuchsia-100 text-fuchsia-700",
     description: (
       <div className="space-y-3">
-        <p>Creating fun and engaging games as a creative outlet.</p>
-        <p>Learning about game design and interactive experiences.</p>
+        <p>Making games is like solving puzzles.</p>
+        <p>Bugs included, free of charge.</p>
       </div>
     ),
   },
@@ -61,8 +62,8 @@ const passions: BadgeItem[] = [
     color: "bg-pink-100 text-pink-700",
     description: (
       <div className="space-y-3">
-        <p>Taking on difficult projects that push my boundaries.</p>
-        <p>Growing through continuous learning and adaptation.</p>
+        <p>If it scares me, I'm doing it.</p>
+        <p>What's the worst that could happen?</p>
       </div>
     ),
   },
@@ -72,8 +73,8 @@ const passions: BadgeItem[] = [
     color: "bg-rose-100 text-rose-700",
     description: (
       <div className="space-y-3">
-        <p>Building useful tools and apps in my free time.</p>
-        <p>Turning interesting ideas into real projects.</p>
+        <p>Building stuff just because I can.</p>
+        <p>Finished projects: 404.</p>
       </div>
     ),
   },
@@ -83,8 +84,19 @@ const passions: BadgeItem[] = [
     color: "bg-orange-100 text-orange-700",
     description: (
       <div className="space-y-3">
-        <p>Exploring how AI can help solve real-world problems.</p>
-        <p>Making technology smarter and more helpful.</p>
+        <p>Fascinated by AI possibilities.</p>
+        <p>Please don't take my job.</p>
+      </div>
+    ),
+  },
+  {
+    Icon: Music,
+    label: "Music",
+    color: "bg-violet-100 text-violet-700",
+    description: (
+      <div className="space-y-3">
+        <p>Could spend hours making the perfect playlist.</p>
+        <p>Silence is overrated anyway.</p>
       </div>
     ),
   },
