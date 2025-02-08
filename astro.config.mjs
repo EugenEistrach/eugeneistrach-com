@@ -15,11 +15,6 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()],
-    build: {
-      rollupOptions: {
-        external: ["tslib"],
-      },
-    },
   },
 
   adapter: vercel(),
