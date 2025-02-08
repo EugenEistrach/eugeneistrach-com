@@ -144,7 +144,7 @@ function NotPlayingRing() {
 
       <div className="flex min-w-0 flex-1 flex-col justify-center px-2">
         <span className="truncate text-xs font-medium text-white">
-          I'm not listening to any music
+          Making the perfect playlist
         </span>
       </div>
     </motion.div>
