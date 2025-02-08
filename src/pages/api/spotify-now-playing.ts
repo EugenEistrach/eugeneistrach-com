@@ -52,6 +52,7 @@ export const GET: APIRoute = async () => {
           .join(", "),
         albumArt: spotifyData.item.album.images[0].url,
         songUrl: spotifyData.item.external_urls.spotify,
+        timestamp: new Date().toISOString(),
       };
     }
 
@@ -59,19 +60,34 @@ export const GET: APIRoute = async () => {
       status: 200,
       headers: {
         "Content-Type": "application/json",
-        "Cache-Control": "public, max-age=5",
-        Vary: "Accept-Encoding",
+        "Cache-Control":
+          "no-store, no-cache, must-revalidate, proxy-revalidate",
+        "CDN-Cache-Control": "no-store",
+        "Vercel-CDN-Cache-Control": "no-store",
+        "Surrogate-Control": "no-store",
+        Pragma: "no-cache",
+        Expires: "0",
+        Vary: "*",
       },
     });
   } catch (error) {
     return new Response(
-      JSON.stringify({ error: "Error fetching Spotify data" }),
+      JSON.stringify({
+        error: "Error fetching Spotify data",
+        timestamp: new Date().toISOString(),
+      }),
       {
         status: 500,
         headers: {
           "Content-Type": "application/json",
-          "Cache-Control": "no-store",
-          Vary: "Accept-Encoding",
+          "Cache-Control":
+            "no-store, no-cache, must-revalidate, proxy-revalidate",
+          "CDN-Cache-Control": "no-store",
+          "Vercel-CDN-Cache-Control": "no-store",
+          "Surrogate-Control": "no-store",
+          Pragma: "no-cache",
+          Expires: "0",
+          Vary: "*",
         },
       }
     );
