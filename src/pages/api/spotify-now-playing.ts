@@ -1,5 +1,7 @@
 import type { APIRoute } from "astro";
 
+export const prerender = false;
+
 // Utility to get Spotify access token
 async function getAccessToken() {
   const refresh_token = import.meta.env.SPOTIFY_REFRESH_TOKEN;
