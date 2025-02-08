@@ -1,0 +1,612 @@
+---
+title: "Modern i18n DX in TanStack Start with Paraglide JS"
+description: "A comprehensive guide to implementing type-safe internationalization in TanStack Start using Paraglide JS, covering everything from basic setup to advanced patterns."
+pubDate: "Feb 08 2025"
+heroImage: "/blog-placeholder-2.jpg"
+url: "/blog/paraglide-tanstack-start"
+---
+
+import { Note } from "../../components/Note";
+import { Hint } from "../../components/Hint";
+import { Video } from "../../components/Video";
+import { Disclaimer } from "../../components/Disclaimer";
+
+<Disclaimer>
+  While this tutorial is written for Paraglide v1 (current stable version), the
+  official documentation has been prematurely updated to v2 which is still in
+  development. Unfortunately, there's currently no way to access the v1
+  documentation. I'll update this tutorial once v2 is stable and generally
+  available.
+</Disclaimer>
+
+## Why Paraglide?
+
+While there are many i18n solutions available like react-i18next, FormatJS, and others, Paraglide JS stands out by offering a more modern, type-safe approach to internationalization. Here are the key benefits:
+
+- **Type Safety**: Full TypeScript support with compile-time checks for missing translations and parameters
+- **Performance**: Zero runtime overhead through compile-time optimizations and tree-shaking
+- **Developer Experience**: Excellent IDE support with inline previews and real-time validation
+- **Modern Tooling**: Part of the [inlang](https://inlang.com/) ecosystem with AI-powered suggestions and automated workflows
+
+<Hint href="https://inlang.com/m/gerre34r/library-inlang-paraglideJs">
+  Check out the official docs to learn more about what makes Paraglide unique
+</Hint>
+
+## Getting Started
+
+Before diving into Paraglide, let's set up a fresh TanStack Start project. If you already have an existing project, just skip this.
+
+First, create a new TanStack Start project:
+
+```bash
+# Get the template
+npx degit https://github.com/tanstack/router/examples/react/start-basic start-basic
+
+cd start-basic
+npm install
+npm run dev
+```
+
+<Hint href="https://tanstack.com/start/latest/docs/framework/react/quick-start">
+  Check out TanStack's documentation for more setup options
+</Hint>
+
+### Setting Up Paraglide
+
+With our project ready, we can now add Paraglide. We'll set it up with English (`en`) and German (`de`) as our languages:
+
+```bash
+# Install Paraglide and its Vite plugin
+npm install -D @inlang/paraglide-js @inlang/paraglide-vite
+
+# Initialize Paraglide
+npx @inlang/paraglide-js@latest init
+```
+
+This command sets up your i18n environment by:
+
+1. Creating an inlang project configuration
+2. Installing required dependencies
+3. Generating the `messages/` directory for your translations
+4. Creating the `./app/paraglide` folder for compiled translations
+
+Next, we need to configure the Vite plugin. This plugin automatically compiles your translations during development, eliminating the need to run the compile command manually when you make changes to your message files.
+
+Open your `app.config.ts` file and add the Paraglide plugin:
+
+```typescript
+import { defineConfig } from "@tanstack/start/config";
+import tsConfigPaths from "vite-tsconfig-paths";
+import { paraglide } from "@inlang/paraglide-vite";
+
+export default defineConfig({
+  vite: {
+    plugins: [
+      tsConfigPaths({
+        projects: ["./tsconfig.json"],
+      }),
+      paraglide({
+        project: "./project.inlang", // Path to your inlang project
+        outdir: "./app/paraglide", // Where generated files will be placed
+      }),
+    ],
+  },
+});
+```
+
+<Note>
+  While Paraglide includes its own nested `.gitignore`, some AI-powered editors
+  like Cursor might still try to analyze the compiled files in `app/paraglide`.
+  Add this folder to your project's `.gitignore` to prevent any unintended
+  modifications.
+</Note>
+
+### Creating Your First Translations
+
+Paraglide uses a flat JSON structure for translations. Here's a simple example:
+
+```json
+// messages/en.json
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "hello": "Hello, world!",
+  "some_flat_other_key": "Hey {name}, how are you?"
+}
+```
+
+And the German equivalent:
+
+```json
+// messages/de.json
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "hello": "Hallo, Welt!",
+  "some_flat_other_key": "Hey {name}, wie geht's dir?"
+}
+```
+
+<Hint href="https://inlang.com/m/gerre34r/library-inlang-paraglideJs/storage-format">
+  The official docs cover more advanced message formatting options
+</Hint>
+
+### Using Translations in Your Application
+
+Now that we have our translations set up, let's create a new route to demonstrate how to use them. First, start your development server:
+
+```bash
+pnpm dev
+```
+
+Create a new route file at `app/routes/hello-world.tsx`:
+
+```tsx
+// ./app/routes/hello-world.tsx
+import { createFileRoute } from "@tanstack/react-router";
+import * as m from "../paraglide/messages";
+
+export const Route = createFileRoute("/hello-world")({
+  component: RouteComponent,
+});
+
+function RouteComponent() {
+  return (
+    <div className="p-4">
+      {/* This is a simple message */}
+      <h1 className="text-2xl font-bold mb-4">{m.hello()}</h1>
+
+      {/* This is a message with a parameter */}
+      <p>{m.some_flat_other_key({ name: "Eugen" })}</p>
+    </div>
+  );
+}
+```
+
+<Note>
+  Your IDE will show errors if you try to use a message that doesn't exist or if
+  you forget to provide required parameters.
+</Note>
+
+### Adding Language Detection and Switching
+
+Let's create a language detection and switching system that integrates with TanStack Start's routing and server functions. Create a new file at `app/utils/i18n.ts`:
+
+```typescript
+// ./app/utils/i18n.ts
+import { createServerFn } from "@tanstack/start";
+import {
+  type AvailableLanguageTag,
+  availableLanguageTags,
+} from "../paraglide/runtime";
+import { getWebRequest, setCookie } from "@tanstack/start/server";
+import { useMatch, useRouter } from "@tanstack/react-router";
+
+export const DEFAULT_LANGUAGE: AvailableLanguageTag = "en";
+
+export const readLanguageFromHtmlLangAttribute = () => {
+  const language = document.documentElement.lang;
+  if (isSupportedLanguage(language)) {
+    return language;
+  }
+  return DEFAULT_LANGUAGE;
+};
+
+export const getLanguageFromRequest = createServerFn({ method: "GET" }).handler(
+  async () => {
+    const request = getWebRequest();
+    if (!request) return DEFAULT_LANGUAGE;
+
+    const cookie = request.headers.get("cookie");
+    const cookieLanguage = cookie
+      ?.split("; ")
+      .find((row: string) => row.startsWith("language="));
+    const language = cookieLanguage?.split("=")[1];
+
+    // Check cookie language first
+    if (language && isSupportedLanguage(language)) {
+      return language;
+    }
+
+    // Parse accept-language header if no valid cookie language
+    const acceptLanguage = request?.headers.get("accept-language");
+    if (acceptLanguage) {
+      // Split into individual language tags and their quality values
+      const languages = acceptLanguage.split(",").map((lang) => {
+        const [tag, quality = "q=1"] = lang.trim().split(";");
+        return {
+          tag: tag.trim(),
+          quality: parseFloat(quality.split("=")[1]),
+        };
+      });
+
+      // Sort by quality value
+      languages.sort((a, b) => b.quality - a.quality);
+
+      // Find the first supported language
+      for (const { tag } of languages) {
+        if (isSupportedLanguage(tag)) {
+          return tag;
+        }
+      }
+    }
+
+    // Fallback to default language
+    return DEFAULT_LANGUAGE;
+  }
+);
+
+const setLanguage = createServerFn({ method: "POST" })
+  .validator((data: { locale: string }) => data)
+  .handler(async ({ data: { locale } }) => {
+    setCookie("language", locale);
+  });
+
+export const useLanguage = () => {
+  const router = useRouter();
+  const match = useMatch({ from: "__root__" });
+  const language = match?.context.language ?? DEFAULT_LANGUAGE;
+  const setLanguageFn = async (language: AvailableLanguageTag) => {
+    await setLanguage({ data: { locale: language } });
+    await router.invalidate();
+  };
+  return [language, setLanguageFn] as const;
+};
+
+const isSupportedLanguage = (
+  language: string | null | undefined
+): language is AvailableLanguageTag => {
+  if (!language) return false;
+  return availableLanguageTags.includes(language.trim() as any);
+};
+```
+
+The code above implements a simple language detection flow: first checking for a saved language in cookies, then falling back to the browser's language preferences (using accept-language headers with quality values to rank language preferences), and finally defaulting to English if no matches are found.
+
+### Setting Up Root Route
+
+Now let's set up the root route to handle language initialization. Create `app/routes/__root.tsx`:
+
+```tsx
+// ./app/routes/__root.tsx
+import { Link, Outlet, createRootRoute } from "@tanstack/react-router";
+import { TanStackRouterDevtools } from "@tanstack/router-devtools";
+import { Meta, Scripts } from "@tanstack/start";
+import { setLanguageTag } from "../paraglide/runtime";
+import { getLanguageFromRequest } from "~/utils/i18n";
+
+export const Route = createRootRoute({
+  component: RootComponent,
+  beforeLoad: async () => {
+    const language = await getLanguageFromRequest();
+    setLanguageTag(language);
+    return { language };
+  },
+  loader: async ({ context }) => {
+    return { language: context.language };
+  },
+});
+
+function RootComponent() {
+  return (
+    <RootDocument>
+      <Outlet />
+    </RootDocument>
+  );
+}
+
+function RootDocument({ children }: { children: React.ReactNode }) {
+  const { language } = Route.useLoaderData();
+  return (
+    <html lang={language}>
+      <head>
+        <Meta />
+      </head>
+      <body>
+        {children}
+        <TanStackRouterDevtools position="bottom-right" />
+        <Scripts />
+      </body>
+    </html>
+  );
+}
+```
+
+### Client-Side Setup
+
+Set up your client entry point at `app/client.tsx`:
+
+```tsx
+// ./app/client.tsx
+import { hydrateRoot } from "react-dom/client";
+import { StartClient } from "@tanstack/start";
+import { createRouter } from "./router";
+import { setLanguageTag } from "~/paraglide/runtime";
+import { readLanguageFromHtmlLangAttribute } from "./utils/i18n";
+
+const router = createRouter();
+
+// Read language from the server-rendered HTML
+setLanguageTag(() => readLanguageFromHtmlLangAttribute());
+
+hydrateRoot(document, <StartClient router={router} />);
+```
+
+### Creating a Language Switcher
+
+Next we need a some way to switch languages. So let's create a language switcher component at `app/components/LanguageSwitcher.tsx`:
+
+```tsx
+// ./app/components/LanguageSwitcher.tsx
+import {
+  availableLanguageTags,
+  type AvailableLanguageTag,
+} from "../paraglide/runtime";
+import { useLanguage } from "../utils/i18n";
+
+const LANGUAGE_NAMES: Record<AvailableLanguageTag, string> = {
+  en: "English",
+  de: "Deutsch",
+};
+
+export function LanguageSwitcher() {
+  const [currentLanguage, setLanguage] = useLanguage();
+
+  return (
+    <div className="flex gap-2">
+      {availableLanguageTags.map((lang) => (
+        <button
+          key={lang}
+          className={`px-2 py-1 rounded ${
+            currentLanguage === lang ? "bg-blue-100" : ""
+          }`}
+          onClick={() => setLanguage(lang)}
+        >
+          {LANGUAGE_NAMES[lang]}
+        </button>
+      ))}
+    </div>
+  );
+}
+```
+
+<Note>
+  The language switcher uses TanStack's invalidation instead of page reloads,
+  making language switching feel instant while preserving application state.
+</Note>
+
+### Using the Language Switcher
+
+Add the language switcher to your route component:
+
+```tsx
+import { createFileRoute } from "@tanstack/react-router";
+import * as m from "../paraglide/messages";
+import { LanguageSwitcher } from "../components/LanguageSwitcher";
+import { useLanguage } from "~/utils/i18n";
+
+export const Route = createFileRoute("/hello-world")({
+  component: RouteComponent,
+});
+
+function RouteComponent() {
+  const [language] = useLanguage();
+
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Current Language: {language}</h1>
+      <h1 className="text-2xl font-bold mb-4">{m.hello()}</h1>
+      <p>{m.some_flat_other_key({ name: "Eugen" })}</p>
+
+      <div className="mt-4">
+        <LanguageSwitcher />
+      </div>
+    </div>
+  );
+}
+```
+
+## Enhancing DX
+
+Now that we have our basic i18n setup working, let's improve our development experience with some powerful tools from the inlang ecosystem.
+
+### VS Code Integration with Sherlock
+
+To make working with translations easier and catch issues early, install the [Sherlock extension](https://marketplace.visualstudio.com/items?itemName=inlang.vs-code-extension) from VS Code marketplace. This extension provides real-time feedback and suggestions for your translations.
+
+1. Install the Sherlock extension from the VS Code marketplace
+2. Open your project in VS Code
+3. The extension will automatically detect your inlang project configuration
+
+<Note>
+  If you don't see your project in the Sherlock inspector, try reloading VS Code
+  (Cmd/Ctrl + Shift + P, then type "Reload Window").
+</Note>
+
+Once installed, you'll see inline previews of your translations directly in the code:
+
+![Sherlock extension showing inline translation previews](/assets/paraglide-tanstack-start/inline-translations.png)
+
+### Understanding Lint Rules
+
+When you initialize a Paraglide project, it comes with several pre-installed lint rules out of the box:
+
+export const RuleTable = ({ rules }) => (
+  <div className="overflow-x-auto">
+    <table className="min-w-full text-sm">
+      <thead>
+        <tr className="border-b">
+          <th className="text-left py-2">Rule</th>
+          <th className="text-left py-2">Description</th>
+          <th className="text-left py-2">Example</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rules.map((rule, i) => (
+          <tr key={i} className="border-b last:border-0">
+            <td className="py-2 font-medium">{rule.name}</td>
+            <td className="py-2">{rule.description}</td>
+            <td className="py-2 font-mono text-xs">{rule.example}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+);
+
+<RuleTable
+  rules={[
+    {
+      name: "Empty Pattern",
+      description: "Flags empty string values",
+      example: '"key": ""',
+    },
+    {
+      name: "Missing Translation",
+      description: "Flags keys missing in target languages",
+      example: "missing 'greeting' in de.json",
+    },
+    {
+      name: "Without Source",
+      description: "Ensures translations exist in the source language (en)",
+      example: "key exists in de.json but not in en.json",
+    },
+  ]}
+/>
+
+Let's add two additional lint rules to catch more translation issues:
+
+<RuleTable
+  rules={[
+    {
+      name: "Identical Pattern",
+      description: "Flags identical translations across languages",
+      example: '"greeting": "Hello" in both files',
+    },
+    {
+      name: "Snake Case ID",
+      description: "Enforces snake_case for message IDs",
+      example: '"my_greeting" vs "myGreeting"',
+    },
+  ]}
+/>
+
+Update your `project.inlang.json`:
+
+```json
+{
+  "$schema": "https://inlang.com/schema/project-settings",
+  "sourceLanguageTag": "en",
+  "languageTags": ["en", "de"],
+  "modules": [
+    // Pre-installed lint rules
+    "https://cdn.jsdelivr.net/npm/@inlang/message-lint-rule-empty-pattern@latest/dist/index.js",
+    "https://cdn.jsdelivr.net/npm/@inlang/message-lint-rule-missing-translation@latest/dist/index.js",
+    "https://cdn.jsdelivr.net/npm/@inlang/message-lint-rule-without-source@latest/dist/index.js",
+    // Required plugins
+    "https://cdn.jsdelivr.net/npm/@inlang/plugin-message-format@latest/dist/index.js",
+    "https://cdn.jsdelivr.net/npm/@inlang/plugin-m-function-matcher@latest/dist/index.js",
+    // Additional lint rules we're adding
+    "https://cdn.jsdelivr.net/npm/@inlang/message-lint-rule-identical-pattern@latest/dist/index.js",
+    "https://cdn.jsdelivr.net/npm/@inlang/message-lint-rule-snake-case-id@latest/dist/index.js"
+  ],
+  "plugin.inlang.messageFormat": {
+    "pathPattern": "./messages/{languageTag}.json"
+  }
+}
+```
+
+### Seeing Lint Rules in Action
+
+Let's intentionally break some lint rules to see how Sherlock helps us identify and fix issues. First, add these problematic translations to your message files.
+
+In `messages/en.json`:
+
+```json
+{
+  // ... existing translations ...
+  "badTranslation": "This is a bad translation",
+  "NOT_SNAKE_CASE": "",
+  "identical_text": "Same text in both languages"
+}
+```
+
+In `messages/de.json`:
+
+```json
+{
+  // ... existing translations ...
+  "identical_text": "Same text in both languages"
+}
+```
+
+Now, let's use these translations in our route. Update `app/routes/hello-world.tsx`:
+
+```tsx
+import { createFileRoute } from "@tanstack/react-router";
+import * as m from "../paraglide/messages";
+import { LanguageSwitcher } from "../components/LanguageSwitcher";
+
+export const Route = createFileRoute("/hello-world")({
+  component: RouteComponent,
+});
+
+function RouteComponent() {
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">{m.hello()}</h1>
+      <p>{m.some_flat_other_key({ name: "Eugen" })}</p>
+
+      {/* Adding our problematic translations */}
+      <div className="mt-4">
+        <p>{m.badTranslation()}</p>
+        <p>{m.NOT_SNAKE_CASE()}</p>
+        <p>{m.identical_text()}</p>
+      </div>
+
+      <div className="mt-4">
+        <LanguageSwitcher />
+      </div>
+    </div>
+  );
+}
+```
+
+You should now see several lint errors in your IDE:
+
+![Sherlock showing lint errors in the translation files](/assets/paraglide-tanstack-start/lint-errors.png)
+
+Let's fix these issues one by one:
+
+<Video src="/assets/paraglide-tanstack-start/fixes.mp4" />
+
+I think this is quite nice DX. Having all those errors etc. makes it harder to
+make mistakes.
+
+## Limitations and Considerations
+
+While Paraglide JS offers many advantages, it has some limitations to consider:
+
+- **Runtime Flexibility**: Translations are compiled at build time, so dynamic loading isn't possible. This mainly affects content-heavy sites like blogs or e-commerce platforms that need translations from a database or CMS. Most CMSs have their own translation systems you can use instead.
+- **Ecosystem Maturity**: Being newer than alternatives, some advanced features are still in development. Version 2 will add pluralization and gender support, and the ecosystem is actively growing with regular updates.
+- **Build Time Overhead**: The compilation step adds a small build overhead, though it's usually negligible.
+
+## Wrapping Up
+
+Throughout this guide, we've explored integrating Paraglide JS with TanStack Start to create a modern, type-safe internationalization system. We've covered:
+
+- Setting up Paraglide JS in a TanStack Start project
+- Creating and managing translations with full type safety
+- Implementing language detection and switching
+- Leveraging VS Code extensions for better DX
+- Understanding and working with lint rules
+
+Paraglide JS stands out for its strong developer experience, type safety, and performance - key features for modern React projects. Its compile-time optimizations and tooling support make it particularly effective for teams building maintainable applications.
+
+If you're starting a new project or looking to modernize your i18n setup, give Paraglide JS a try.
+
+### Useful Resources
+
+- [Full source code for this guide](https://github.com/EugenEistrach/paraglide-tanstack-start)
+- [Paraglide JS Documentation](https://inlang.com/m/gerre34r/library-inlang-paraglideJs)
+- [TanStack Start Documentation](https://tanstack.com/start)
+- [Inlang GitHub Repository](https://github.com/inlang/inlang)
+- [VS Code Sherlock Extension](https://marketplace.visualstudio.com/items?itemName=inlang.vs-code-extension)

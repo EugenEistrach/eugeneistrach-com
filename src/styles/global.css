@@ -1,19 +1,150 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-@font-face {
-  font-family: "Atkinson";
-  src: url("/fonts/atkinson-regular.woff") format("woff");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --animate-in: enter 200ms ease-out;
+  --animate-out: exit 200ms ease-in;
+  --fade-in: fade-in 200ms ease-out;
+  --fade-out: fade-out 200ms ease-in;
+  --zoom-in: zoom-in 200ms ease-out;
+  --zoom-out: zoom-out 200ms ease-in;
+  --slide-in-from-top: slide-in-from-top 200ms ease-out;
+  --slide-in-from-bottom: slide-in-from-bottom 200ms ease-out;
+  --slide-in-from-left: slide-in-from-left 200ms ease-out;
+  --slide-in-from-right: slide-in-from-right 200ms ease-out;
 }
 
-@font-face {
-  font-family: "Atkinson";
-  src: url("/fonts/atkinson-bold.woff") format("woff");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes exit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes zoom-in {
+  from {
+    transform: scale(0.95);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes zoom-out {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(0.95);
+  }
+}
+
+@keyframes slide-in-from-top {
+  from {
+    transform: translateY(-0.5rem);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-from-bottom {
+  from {
+    transform: translateY(0.5rem);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-from-left {
+  from {
+    transform: translateX(-0.5rem);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-from-right {
+  from {
+    transform: translateX(0.5rem);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out forwards;
+  opacity: 0;
+}
+
+@keyframes music-bar {
+  0% {
+    height: 0.75rem;
+  }
+  50% {
+    height: 1.25rem;
+  }
+  100% {
+    height: 0.75rem;
+  }
+}
+
+.animate-music-bar {
+  animation: music-bar 1s ease-in-out infinite;
+}
+
+.w-0\.75 {
+  width: 0.1875rem; /* 3px */
+}
+
+.gap-0\.75 {
+  gap: 0.1875rem; /* 3px */
 }

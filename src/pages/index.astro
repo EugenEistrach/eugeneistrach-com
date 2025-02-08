@@ -4,55 +4,125 @@ import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
 import FormattedDate from "../components/FormattedDate.astro";
 import { getCollection } from "astro:content";
 import { Image } from "astro:assets";
+import { Code, Mail, Github } from "lucide-react";
+
+import NowPlayingWithProvider from "../components/NowPlayingWithProvider";
+import { ExpandableSection } from "../components/ExpandableSection";
+import { SkillButton } from "../components/SkillsButton.tsx";
+import { PassionButton } from "../components/PassionsButton.tsx";
+import { TechStackButton } from "../components/TechStackButton.tsx";
+
 import profilePic from "../assets/profile.jpeg";
 
-const posts = await getCollection("blog");
+const socialLinks = [
+  {
+    icon: Mail,
+    label: "eugen.eistrach@gmail.com",
+    href: "mailto:eugen.eistrach@gmail.com",
+    color: "hover:text-red-500",
+  },
+  {
+    icon: Github,
+    label: "GitHub",
+    href: "https://github.com/eugeneistrach",
+    color: "hover:text-purple-500",
+  },
+  {
+    icon: Code,
+    label: "Source Code",
+    href: "https://github.com/eugeneistrach/eugeneistrach-com",
+    color: "hover:text-emerald-500",
+  },
+];
+
+const posts = await getCollection("blog").then((items) =>
+  items.sort(
+    (a, b) =>
+      new Date(b.data.pubDate).getTime() - new Date(a.data.pubDate).getTime()
+  )
+);
 ---
 
 <Layout title={SITE_TITLE} description={SITE_DESCRIPTION}>
-  <div class="grid grid-cols-12 gap-8 mb-16">
-    <div
-      class="col-span-12 md:col-span-4 flex flex-col items-center text-center"
-    >
-      <Image
-        src={profilePic}
-        alt="Eugen Eistrach"
-        width={128}
-        height={128}
-        loading="eager"
-        class="rounded-full object-cover shadow-lg w-32 h-32 mb-4"
-      />
-      <h1 class="text-4xl font-bold text-gray-900">Eugen Eistrach</h1>
-    </div>
-    <div
-      class="col-span-12 md:col-span-8 flex flex-col justify-center text-2xl"
-    >
-      <p>
-        I wear <span class="text-blue-500">many hats </span>
-        at Konecranes, keeping our ecom platform in top shape. Whether it's test
-        automation, code reviews, deployments, or even stepping in to handle development
-        and support, I thrive on the <span class="text-green-500"
-          >dynamic nature of my role</span
-        >.
-      </p>
+  <div class="">
+    <Image
+      src={profilePic}
+      alt="EUGEN_EISTRACH"
+      width={100}
+      height={100}
+      class="rounded-full w-20 h-20 md:w-24 md:h-24 mb-4"
+    />
 
-      <p class="mt-4">
-        In my personal time, I'm <span class="text-yellow-500"
-          >driven by curiosity and a love for learning</span
-        >. Whether I'm <span class="text-purple-500"
-          >exploring new technologies</span
-        >, enjoying a run, or picking up new hobbies, I constantly try to
-        challenge myself.
-      </p>
+    <h1
+      class="text-4xl md:text-5xl font-mono font-bold mb-2 flex items-end gap-3"
+    >
+      EUGEN_EISTRACH.
+    </h1>
+
+    <div
+      class="flex flex-col md:flex-wrap md:flex-row gap-4 mb-8 text-sm text-gray-500 font-mono"
+    >
+      {
+        socialLinks.map(({ icon: Icon, label, href, color }) => (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            class={`flex items-center gap-1.5 transition-colors duration-200 ${color}`}
+          >
+            <Icon className="w-4 h-4" strokeWidth={1.5} />
+            <span>{label}</span>
+          </a>
+        ))
+      }
+    </div>
+
+    <div class="flex flex-col md:flex-row gap-6 items-start text-lg md:text-xl">
+      <div class="flex-1 font-mono leading-relaxed">
+        <div class="mb-6">
+          <div>
+            I'm a Software Engineer at Konecranes maintaining a global ecommerce
+            platform, and run a software development business on the side - I{
+              " "
+            }
+            <SkillButton client:load />
+          </div>
+        </div>
+
+        <div class="mb-6">
+          Driven by curiosity and continuous growth, I actively pursue new
+          technologies and{" "}
+          <PassionButton client:load />
+        </div>
+
+        <div class="">
+          My toolkit includes a wide range of{" "}
+          <TechStackButton client:load />
+        </div>
+      </div>
     </div>
   </div>
 
+  <div class="border-t border-gray-200 my-8"></div>
+  <div
+    class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 md:gap-0 py-4 items-center text-center md:text-left"
+  >
+    <h2 class="text-lg md:text-xl text-gray-700">
+      I'm currently listening to:
+    </h2>
+    <NowPlayingWithProvider client:load />
+  </div>
+  <div class="border-b border-gray-200 my-8 mb-24"></div>
+
   <section>
-    <h2 class="text-2xl font-bold text-gray-900 mb-8">Writing</h2>
+    <h2 class="text-3xl md:text-4xl font-black uppercase text-gray-900 mb-8">
+      BRAIN_DUMPS.
+    </h2>
+
     <ul class="grid grid-cols-1 md:grid-cols-2 gap-8 list-none">
       {
         posts.map((post, index) => (
-          <li class="md:first:col-span-2 first:text-center">
+          <li class={`${index === 0 ? "md:col-span-2" : ""} first:text-center`}>
             <a href={`/blog/${post.id}/`} class="block group">
               <Image
                 src={post.data.heroImage}
@@ -61,11 +131,11 @@ const posts = await getCollection("blog");
                 height={360}
                 transition:name={`hero-${post.id}`}
                 loading={index === 0 ? "eager" : "lazy"}
-                class="rounded-lg mb-4 transition-shadow group-hover:shadow-lg"
+                class="rounded-lg mb-4 transition-shadow group-hover:shadow-lg w-full"
               />
               <h3
-                class="text-2xl md:text-4xl font-bold text-gray-900 mb-2 group-hover:text-blue-600
-                text-center"
+                class="text-xl md:text-2xl lg:text-4xl font-bold text-gray-900 mb-2 group-hover:text-blue-600
+                  text-center"
                 transition:name={`title-${post.id}`}
               >
                 {post.data.title}

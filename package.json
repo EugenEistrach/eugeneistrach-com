@@ -3,21 +3,34 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "astro dev",
+    "dev": "astro dev --port 3000",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "cache-icons": "tsx scripts/cache-tech-icons.ts"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.0.8",
+    "@astrojs/react": "^4.2.0",
     "@astrojs/rss": "^4.0.11",
     "@astrojs/sitemap": "^3.2.1",
     "@fontsource-variable/geist-mono": "^5.0.1",
-    "astro": "^5.2.5"
+    "@radix-ui/react-dialog": "^1.1.6",
+    "@radix-ui/react-tooltip": "^1.1.8",
+    "@tailwindcss/vite": "^4.0.3",
+    "@tanstack/react-query": "^5.66.0",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "astro": "^5.2.5",
+    "lucide-react": "^0.474.0",
+    "motion": "^12.3.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "vaul": "^1.1.2"
   },
   "devDependencies": {
-    "@astrojs/tailwind": "^6.0.0",
     "@tailwindcss/typography": "^0.5.16",
-    "tailwindcss": "^3.4.17"
+    "tailwindcss": "^4.0.3",
+    "tsx": "^4.19.2"
   }
 }

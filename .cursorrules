@@ -1,0 +1,2 @@
+- we are using pnpm as package manager
+- framer motion got rebranded to motion. New import is  "motion/react"
