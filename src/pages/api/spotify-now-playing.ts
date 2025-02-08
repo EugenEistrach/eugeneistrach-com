@@ -30,7 +30,7 @@ export const GET: APIRoute = async () => {
 
     // Fetch currently playing
     const response = await fetch(
-      "https://api.spotify.com/v1/me/player/currently-playing",
+      `https://api.spotify.com/v1/me/player/currently-playing?_=${Date.now()}`,
       {
         headers: {
           Authorization: `Bearer ${access_token}`,
