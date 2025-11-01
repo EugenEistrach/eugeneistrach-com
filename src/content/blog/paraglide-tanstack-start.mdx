@@ -6,13 +6,15 @@ heroImage: "/assets/paraglide-tanstack-start/image.png"
 ---
 
 import { Note } from "../../components/Note";
-import { Hint } from "../../components/Hint";
 import { Video } from "../../components/Video";
 import { Disclaimer } from "../../components/Disclaimer";
 
-<Note>
-  This guide focuses on cookie-based language detection without URL routing patterns (e.g., `/en/about`). For examples with URL-based i18n routing, see the official [TanStack Router i18n example](https://github.com/TanStack/router/tree/main/examples/react/i18n-paraglide) and [TanStack Start i18n example](https://github.com/TanStack/router/tree/main/examples/react/start-i18n-paraglide).
-</Note>
+This guide walks through implementing internationalization in TanStack Start using Paraglide JS, focusing on cookie-based language detection and switching.
+
+**Official Examples**
+For more advanced patterns including URL-based routing (e.g., `/en/about`, `/de/about`), check out TanStack's maintained reference implementations:
+- [TanStack Router + Paraglide](https://github.com/TanStack/router/tree/main/examples/react/i18n-paraglide)
+- [TanStack Start + Paraglide](https://github.com/TanStack/router/tree/main/examples/react/start-i18n-paraglide)
 
 ## Why Paraglide?
 
@@ -23,9 +25,9 @@ While there are many i18n solutions available like react-i18next, FormatJS, and 
 - **Developer Experience**: Excellent IDE support with inline previews and real-time validation
 - **Modern Tooling**: Part of the [inlang](https://inlang.com/) ecosystem with AI-powered suggestions and automated workflows
 
-<Hint href="https://inlang.com/m/gerre34r/library-inlang-paraglideJs">
+<Note href="https://inlang.com/m/gerre34r/library-inlang-paraglideJs">
   Check out the official docs to learn more about what makes Paraglide unique
-</Hint>
+</Note>
 
 ## Getting Started
 
@@ -46,11 +48,11 @@ cd start-basic
 npm run dev
 ```
 
-<Hint href="https://tanstack.com/start/latest/docs/framework/react/quick-start">
+<Note href="https://tanstack.com/start/latest/docs/framework/react/quick-start">
   Check out TanStack's documentation for more setup options and configuration details
-</Hint>
+</Note>
 
-### Setting Up Paraglide
+### Initialize Paraglide
 
 With our project ready, we can now add Paraglide. We'll set it up with English (`en`) and German (`de`) as our languages.
 
@@ -60,22 +62,18 @@ Run the initialization command:
 npx @inlang/paraglide-js@latest init
 ```
 
-The CLI will guide you through setup with several prompts:
+The CLI guides you through setup with interactive prompts:
+- Compiled files location (default: `./src/paraglide`)
+- VS Code/Cursor extension recommendation (creates `.vscode/extensions.json` if selected)
+- Machine translations (optional - uses Google Cloud Translation API for initial drafts)
 
-1. **Uncommitted changes** - Recommends committing your work first (you can proceed anyway)
-2. **Compiled files location** - Where to place generated files (default: `./src/paraglide`)
-3. **TypeScript configuration** - Verifies `compilerOptions.allowJs: true` in `tsconfig.json`
-4. **VS Code extension** - Adds Sherlock extension recommendation for inline translation previews
-5. **Machine translations** - Enable AI-powered auto-translations (optional, we'll skip for manual control)
+<Note href="https://inlang.com/m/2qj2w8pu/app-inlang-cli">
+  Machine translations generate initial translation drafts that you can refine manually. Requires a Google Cloud Translation API key. Learn more about the inlang CLI.
+</Note>
 
-The init command automatically:
-- Installs `@inlang/paraglide-js` to devDependencies
-- Creates `project.inlang/` directory with your i18n configuration
-- Creates `messages/` with example translation files (`en.json`, `de.json`)
-- Adds the Vite plugin to `vite.config.ts`
-- Compiles initial translations to the output directory
+### Configure Vite Plugin
 
-After initialization completes, you'll find the plugin added to `vite.config.ts`. To enable cookie-based language persistence and detection, update the plugin configuration with the following options:
+Update `vite.config.ts` with cookie and detection options:
 
 ```typescript
 import { defineConfig } from 'vite'
@@ -98,18 +96,16 @@ export default defineConfig({
 })
 ```
 
-These configuration options enable:
-- `outputStructure: 'message-modules'` - Cleaner import syntax for messages
-- `cookieName: 'PARAGLIDE_LOCALE'` - Persists language selection across sessions
-- `strategy: ['cookie', 'preferredLanguage', 'baseLocale']` - Language detection priority (cookie → browser preference → default)
+Configuration:
+- `outputStructure: 'message-modules'` - Clean import syntax
+- `cookieName` - Persist language across sessions
+- `strategy` - Detection order: cookie → browser → default
 
 <Note>
-  By excluding "url" from the strategy array, we keep URLs clean without locale prefixes (e.g., `/about` instead of `/en/about`). This is ideal for applications where multi-locale SEO isn't a primary concern.
+  This guide focuses on cookie-based locale detection. For URL-based routing examples, check the [official guide](https://github.com/TanStack/router/tree/main/examples/react/start-i18n-paraglide).
 </Note>
 
 ### Creating Your First Translations
-
-Paraglide uses a flat JSON structure for translations. The init command already created a `messages/` directory with example files. Let's customize them with our own messages.
 
 Update `messages/en.json`:
 
@@ -133,19 +129,17 @@ Update `messages/de.json`:
 
 Parameters in curly braces (like `{name}`) become required function parameters in your TypeScript code, providing compile-time safety. The Vite plugin watches these files and automatically recompiles when you make changes.
 
-<Hint href="https://inlang.com/m/gerre34r/library-inlang-paraglideJs/basics">
+<Note href="https://inlang.com/m/gerre34r/library-inlang-paraglideJs/basics">
   Learn more about message parameters, pluralization, and advanced formatting in the official documentation
-</Hint>
+</Note>
 
 ### Using Translations in Your Application
 
-Now that we have our translations set up, let's create a new route to demonstrate how to use them. First, start your development server:
+Start the dev server and create `src/routes/hello.tsx`:
 
 ```bash
 npm run dev
 ```
-
-Create a new route file at `src/routes/hello.tsx`:
 
 ```tsx
 import { createFileRoute } from '@tanstack/react-router'
@@ -229,15 +223,9 @@ export function LanguageSwitcher() {
 }
 ```
 
-This component:
-- Maps over all available `locales` from the Paraglide runtime
-- Uses `getLocale()` to check which language is currently active
-- Calls `setLocale(locale)` to switch languages (automatically updates the cookie)
-- Highlights the active language with different styling
-
 ### Wire It All Together
 
-Finally, update your root route to use the language switcher and set the HTML `lang` attribute. Update `src/routes/__root.tsx`:
+Update `src/routes/__root.tsx`:
 
 ```tsx
 import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
@@ -286,22 +274,13 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 }
 ```
 
-Key points:
-- `<html lang={getLocale()}>` dynamically sets the page language for accessibility and SEO
-- The `LanguageSwitcher` is placed in the root layout, making it available on all pages
-- When a user switches languages, `setLocale()` updates the cookie and triggers a re-render with the new language
+## VS Code / Cursor Integration
 
-That's it! Your application now has full language detection and switching capabilities with just a few lines of code.
+If you selected the extension recommendation during CLI setup, a `.vscode/extensions.json` file was created recommending the Sherlock extension.
 
-## Developer Experience
-
-### VS Code Integration
-
-The Paraglide CLI automatically configures VS Code to suggest the Sherlock extension. After running `npm create @inlang/paraglide-js@latest init`, you'll find a `.vscode/extensions.json` file in your project recommending the extension.
-
-<Hint href="https://marketplace.visualstudio.com/items?itemName=inlang.vs-code-extension">
-  Install Sherlock from VS Code marketplace
-</Hint>
+<Note href="https://marketplace.visualstudio.com/items?itemName=inlang.vs-code-extension">
+  Install Sherlock from VS Code or Cursor marketplace
+</Note>
 
 Once installed, the extension provides:
 
@@ -317,28 +296,35 @@ This makes working with translations seamless - you can see and edit everything 
 
 While Paraglide JS offers many advantages, it has some limitations to consider:
 
-- **Runtime Flexibility**: Translations are compiled at build time, so dynamic loading isn't possible. This mainly affects content-heavy sites like blogs or e-commerce platforms that need translations from a database or CMS. Most CMSs have their own translation systems you can use instead.
-- **Ecosystem Maturity**: Being newer than alternatives, some advanced features are still in development. Version 2 will add pluralization and gender support, and the ecosystem is actively growing with regular updates.
-- **Build Time Overhead**: The compilation step adds a small build overhead, though it's usually negligible.
+- **Runtime Flexibility**: Translations are compiled at build time, so dynamic loading isn't possible. This mainly affects content-heavy sites needing translations from a database or CMS.
+- **Ecosystem Maturity**: Being newer than alternatives, some advanced features like pluralization and gender support are still in active development.
+- **Build Time Overhead**: The compilation step adds build overhead, though it's usually negligible.
 
 ## Wrapping Up
 
-Throughout this guide, we've explored integrating Paraglide JS with TanStack Start to create a modern, type-safe internationalization system. We've covered:
+This guide covered integrating Paraglide JS with TanStack Start for type-safe internationalization:
 
-- Setting up Paraglide JS in a TanStack Start project
-- Creating and managing translations with full type safety
-- Implementing language detection and switching
-- Leveraging VS Code extensions for better DX
-- Understanding and working with lint rules
+- Setting up Paraglide JS with cookie-based locale detection
+- Creating and managing translations with full TypeScript support
+- Implementing language switching with built-in runtime functions
+- VS Code integration for inline translation previews
 
-Paraglide JS stands out for its strong developer experience, type safety, and performance - key features for modern React projects. Its compile-time optimizations and tooling support make it particularly effective for teams building maintainable applications.
+Paraglide JS stands out for its developer experience, type safety, and performance through compile-time optimizations.
 
-If you're starting a new project or looking to modernize your i18n setup, give Paraglide JS a try.
+## Resources
 
-### Useful Resources
+**Official Examples**
+- [TanStack Router + Paraglide](https://github.com/TanStack/router/tree/main/examples/react/i18n-paraglide)
+- [TanStack Start + Paraglide](https://github.com/TanStack/router/tree/main/examples/react/start-i18n-paraglide)
 
-- [Full source code for this guide](https://github.com/EugenEistrach/paraglide-tanstack-start)
-- [Paraglide JS Documentation](https://inlang.com/m/gerre34r/library-inlang-paraglideJs)
-- [TanStack Start Documentation](https://tanstack.com/start)
-- [Inlang GitHub Repository](https://github.com/inlang/inlang)
-- [VS Code Sherlock Extension](https://marketplace.visualstudio.com/items?itemName=inlang.vs-code-extension)
+**Documentation**
+- [Paraglide JS](https://inlang.com/m/gerre34r/library-inlang-paraglideJs) - Main documentation
+- [Paraglide Basics](https://inlang.com/m/gerre34r/library-inlang-paraglideJs/basics) - Message parameters and formatting
+- [TanStack Start](https://tanstack.com/start) - Framework documentation
+- [TanStack Start Quick Start](https://tanstack.com/start/latest/docs/framework/react/quick-start) - Setup guide
+- [inlang CLI](https://inlang.com/m/2qj2w8pu/app-inlang-cli) - Machine translation and automation
+
+**Tools & Ecosystem**
+- [inlang](https://inlang.com/) - i18n ecosystem
+- [Sherlock VS Code Extension](https://marketplace.visualstudio.com/items?itemName=inlang.vs-code-extension) - Inline translation previews
+- [Inlang GitHub](https://github.com/inlang/inlang) - Source code and issues

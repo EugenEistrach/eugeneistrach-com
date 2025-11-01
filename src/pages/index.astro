@@ -2,7 +2,7 @@
 import Layout from "../components/Layout.astro";
 import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
 import FormattedDate from "../components/FormattedDate.astro";
-import { getCollection } from "astro:content";
+import { getCollection, render } from "astro:content";
 import { Image } from "astro:assets";
 import { Code, Mail, Github } from "lucide-react";
 
@@ -35,11 +35,25 @@ const socialLinks = [
   },
 ];
 
-const posts = await getCollection("blog").then((items) =>
-  items.sort(
-    (a, b) =>
-      new Date(b.data.pubDate).getTime() - new Date(a.data.pubDate).getTime()
-  )
+// Get posts and their lastModified dates
+const allPosts = await getCollection("blog");
+const postsWithMeta = await Promise.all(
+  allPosts.map(async (post) => {
+    const { remarkPluginFrontmatter } = await render(post);
+    const lastModified = remarkPluginFrontmatter.lastModified;
+    const displayDate = lastModified ? new Date(lastModified) : (post.data.updatedDate || post.data.pubDate);
+    return {
+      ...post,
+      lastModified,
+      displayDate,
+      isUpdated: !!(lastModified || post.data.updatedDate)
+    };
+  })
+);
+
+// Sort by display date (updated or published)
+const posts = postsWithMeta.sort(
+  (a, b) => b.displayDate.getTime() - a.displayDate.getTime()
 );
 ---
 
@@ -152,10 +166,11 @@ const posts = await getCollection("blog").then((items) =>
                 {post.data.title}
               </h3>
               <p
-                class="text-gray-600 text-center"
+                class="text-gray-600 text-center text-sm"
                 transition:name={`date-${post.id}`}
               >
-                <FormattedDate date={post.data.pubDate} />
+                {post.isUpdated && <span class="text-gray-500">Updated · </span>}
+                <FormattedDate date={post.displayDate} />
               </p>
             </a>
           </li>
