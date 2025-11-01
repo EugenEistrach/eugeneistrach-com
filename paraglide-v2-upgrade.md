@@ -48,8 +48,11 @@ Upgrading the blog article from Paraglide v1 to v2 for TanStack Start integratio
 - [x] Commit for testing (commit: f599ced)
 
 **User tests:** ⏳ READY FOR TESTING
-- [ ] Run `npm run dev` in paraglide-test project
-- [ ] Visit http://localhost:3000/hello
+- [x] Fixed node_modules issue (commit: 7daa9ad)
+- [x] Verified dev server starts successfully
+- [x] Paraglide compilation working: "✔ [paraglide-js] Compilation complete (message-modules)"
+- [ ] Run `npm run dev` in workspace paraglide-test project
+- [ ] Visit http://localhost:3002/hello (or whatever port it assigns)
 - [ ] Verify "Hello, world!" renders
 - [ ] Verify "Hey Eugene, how are you?" renders
 - [ ] Check TypeScript autocomplete works for messages
