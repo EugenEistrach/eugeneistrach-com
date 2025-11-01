@@ -51,30 +51,43 @@ Upgrading the blog article from Paraglide v1 to v2 for TanStack Start integratio
 - [x] Update "Creating Your First Translations" section
 - [x] Update "Using Translations in Your Application" section
 
-### Phase 3: Implementation & Testing (Current)
+### Phase 3: Basic Translation Rendering ✅
 **Agent implements:**
 - [x] Update message files in test project
 - [x] Create hello.tsx route in test project
 - [x] Commit for testing (commit: f599ced)
 
-**User tests:** ⏳ READY FOR TESTING
+**User tests:**
 - [x] Fixed node_modules issue (commit: 7daa9ad)
 - [x] Verified dev server starts successfully
-- [x] Paraglide compilation working: "✔ [paraglide-js] Compilation complete (message-modules)"
+- [x] Paraglide compilation working
+- [x] Verified "Hello, world!" renders
+- [x] Verified "Hey Eugene, how are you?" renders
+- [x] TypeScript autocomplete works for messages
+- [x] TypeScript error if parameter missing
+- ✅ **CONFIRMED WORKING**
+
+### Phase 4: Language Switching & Middleware (Current)
+**Agent implements:**
+- [x] Created src/server.ts with paraglideMiddleware
+- [x] Updated __root.tsx with getLocale() for html lang
+- [x] Added inline language switcher (EN/DE buttons)
+- [x] Commit for testing (commit: e7fa996)
+
+**User tests:** ⏳ READY FOR TESTING
 - [ ] Run `npm run dev` in workspace paraglide-test project
-- [ ] Visit http://localhost:3002/hello (or whatever port it assigns)
-- [ ] Verify "Hello, world!" renders
-- [ ] Verify "Hey Eugene, how are you?" renders
-- [ ] Check TypeScript autocomplete works for messages
-- [ ] Check TypeScript error if parameter missing
+- [ ] Visit http://localhost:3002/hello
+- [ ] Click "EN" button - verify text stays English
+- [ ] Click "DE" button - verify text changes to German ("Hallo, Welt!" and "Hey Eugene, wie geht's dir?")
+- [ ] Refresh page - verify language persists (cookie test)
+- [ ] Check browser DevTools → Application → Cookies → PARAGLIDE_LOCALE cookie exists
+- [ ] Clear cookie, refresh - should default to browser language
 - [ ] Report findings
 
 **Next iterations will cover:**
-- Language switcher implementation
-- Server middleware setup
-- Cookie persistence testing
-- Root route configuration
+- Blog article updates (remove complex i18n utils, simplify sections)
 - Final documentation polish
+- Lint rules and DX section review
 
 #### Current Guide Sections Status:
 1. ✅ **Getting Started** - Updated for latest CLI
