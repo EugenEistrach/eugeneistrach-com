@@ -8,7 +8,7 @@ export function remarkModifiedTime() {
       file.data.astro.frontmatter.lastModified = result.toString();
     } catch (error) {
       // If git log fails (e.g., file not yet committed), skip
-      console.warn(`Could not get git timestamp for ${filepath}`);
+      console.warn(`Could not get git timestamp for ${filepath}:`, error instanceof Error ? error.message : error);
     }
   };
 }
