@@ -28,6 +28,16 @@ Upgrading the blog article from Paraglide v1 to v2 for TanStack Start integratio
 4. User reports findings
 5. Agent adjusts based on feedback, repeat
 
+## Writing Principles
+
+**No Assumed Context - Standalone Clarity**
+
+- Never reference "the old way" or "previously" or "new approach"
+- Explain everything as if reader has no prior knowledge
+- Each section should be understandable without reading v1 guide
+- Focus on what something does, not how it changed
+- Example: ❌ "Notice the new import style" → ✅ "The outputStructure option enables this import syntax"
+
 ## Process
 
 ### Phase 1: Research & Analysis ✅

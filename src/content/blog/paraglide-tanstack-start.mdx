@@ -35,97 +35,110 @@ While there are many i18n solutions available like react-i18next, FormatJS, and 
 
 Before diving into Paraglide, let's set up a fresh TanStack Start project. If you already have an existing project, just skip this.
 
-First, create a new TanStack Start project:
+First, create a new TanStack Start project using the official CLI:
 
 ```bash
-# Get the template
-npx degit https://github.com/tanstack/router/examples/react/start-basic start-basic
+npm create @tanstack/start@latest
+```
 
+For this guide, I've chosen a clean, minimal setup with Tailwind CSS and Biome as the toolchain, without any add-ons or examples. Feel free to adjust these options based on your preferences.
+
+Once created, navigate to your project and start the dev server:
+
+```bash
 cd start-basic
-npm install
 npm run dev
 ```
 
 <Hint href="https://tanstack.com/start/latest/docs/framework/react/quick-start">
-  Check out TanStack's documentation for more setup options
+  Check out TanStack's documentation for more setup options and configuration details
 </Hint>
 
 ### Setting Up Paraglide
 
-With our project ready, we can now add Paraglide. We'll set it up with English (`en`) and German (`de`) as our languages:
+With our project ready, we can now add Paraglide. We'll set it up with English (`en`) and German (`de`) as our languages.
+
+Run the initialization command:
 
 ```bash
-# Install Paraglide and its Vite plugin
-npm install -D @inlang/paraglide-js @inlang/paraglide-vite
-
-# Initialize Paraglide
 npx @inlang/paraglide-js@latest init
 ```
 
-This command sets up your i18n environment by:
+The CLI will guide you through setup with several prompts:
 
-1. Creating an inlang project configuration
-2. Installing required dependencies
-3. Generating the `messages/` directory for your translations
-4. Creating the `./app/paraglide` folder for compiled translations
+1. **Uncommitted changes** - Recommends committing your work first (you can proceed anyway)
+2. **Compiled files location** - Where to place generated files (default: `./src/paraglide`)
+3. **TypeScript configuration** - Verifies `compilerOptions.allowJs: true` in `tsconfig.json`
+4. **VS Code extension** - Adds Sherlock extension recommendation for inline translation previews
+5. **Machine translations** - Enable AI-powered auto-translations (optional, we'll skip for manual control)
 
-Next, we need to configure the Vite plugin. This plugin automatically compiles your translations during development, eliminating the need to run the compile command manually when you make changes to your message files.
+The init command automatically:
+- Installs `@inlang/paraglide-js` to devDependencies
+- Creates `project.inlang/` directory with your i18n configuration
+- Creates `messages/` with example translation files (`en.json`, `de.json`)
+- Adds the Vite plugin to `vite.config.ts`
+- Compiles initial translations to the output directory
 
-Open your `app.config.ts` file and add the Paraglide plugin:
+After initialization completes, you'll find the plugin added to `vite.config.ts`. To enable cookie-based language persistence and detection, update the plugin configuration with the following options:
 
 ```typescript
-import { defineConfig } from "@tanstack/start/config";
-import tsConfigPaths from "vite-tsconfig-paths";
-import { paraglide } from "@inlang/paraglide-vite";
+import { defineConfig } from 'vite'
+import { tanstackStart } from '@tanstack/react-start/plugin/vite'
+import viteReact from '@vitejs/plugin-react'
+import { paraglideVitePlugin } from '@inlang/paraglide-js'
 
 export default defineConfig({
-  vite: {
-    plugins: [
-      tsConfigPaths({
-        projects: ["./tsconfig.json"],
-      }),
-      paraglide({
-        project: "./project.inlang", // Path to your inlang project
-        outdir: "./app/paraglide", // Where generated files will be placed
-      }),
-    ],
-  },
-});
+  plugins: [
+    paraglideVitePlugin({
+      project: './project.inlang',
+      outdir: './src/paraglide',
+      outputStructure: 'message-modules',
+      cookieName: 'PARAGLIDE_LOCALE',
+      strategy: ['cookie', 'preferredLanguage', 'baseLocale'],
+    }),
+    tanstackStart(),
+    viteReact(),
+  ],
+})
 ```
 
+These configuration options enable:
+- `outputStructure: 'message-modules'` - Cleaner import syntax for messages
+- `cookieName: 'PARAGLIDE_LOCALE'` - Persists language selection across sessions
+- `strategy: ['cookie', 'preferredLanguage', 'baseLocale']` - Language detection priority (cookie → browser preference → default)
+
 <Note>
-  While Paraglide includes its own nested `.gitignore`, some AI-powered editors
-  like Cursor might still try to analyze the compiled files in `app/paraglide`.
-  Add this folder to your project's `.gitignore` to prevent any unintended
-  modifications.
+  By excluding "url" from the strategy array, we keep URLs clean without locale prefixes (e.g., `/about` instead of `/en/about`). This is ideal for applications where multi-locale SEO isn't a primary concern.
 </Note>
 
 ### Creating Your First Translations
 
-Paraglide uses a flat JSON structure for translations. Here's a simple example:
+Paraglide uses a flat JSON structure for translations. The init command already created a `messages/` directory with example files. Let's customize them with our own messages.
+
+Update `messages/en.json`:
 
 ```json
-// messages/en.json
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "hello": "Hello, world!",
-  "some_flat_other_key": "Hey {name}, how are you?"
+  "greeting": "Hey {name}, how are you?"
 }
 ```
 
-And the German equivalent:
+Update `messages/de.json`:
 
 ```json
-// messages/de.json
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "hello": "Hallo, Welt!",
-  "some_flat_other_key": "Hey {name}, wie geht's dir?"
+  "greeting": "Hey {name}, wie geht's dir?"
 }
 ```
 
-<Hint href="https://inlang.com/m/gerre34r/library-inlang-paraglideJs/storage-format">
-  The official docs cover more advanced message formatting options
+Parameters in curly braces (like `{name}`) become required function parameters in your TypeScript code, providing compile-time safety. The Vite plugin watches these files and automatically recompiles when you make changes.
+
+<Hint href="https://inlang.com/m/gerre34r/library-inlang-paraglideJs/basics">
+  Learn more about message parameters, pluralization, and advanced formatting in the official documentation
 </Hint>
 
 ### Using Translations in Your Application
@@ -133,36 +146,39 @@ And the German equivalent:
 Now that we have our translations set up, let's create a new route to demonstrate how to use them. First, start your development server:
 
 ```bash
-pnpm dev
+npm run dev
 ```
 
-Create a new route file at `app/routes/hello-world.tsx`:
+Create a new route file at `src/routes/hello.tsx`:
 
 ```tsx
-// ./app/routes/hello-world.tsx
-import { createFileRoute } from "@tanstack/react-router";
-import * as m from "../paraglide/messages";
+import { createFileRoute } from '@tanstack/react-router'
+import { m } from '@/paraglide/messages'
 
-export const Route = createFileRoute("/hello-world")({
-  component: RouteComponent,
-});
+export const Route = createFileRoute('/hello')({
+  component: HelloRoute,
+})
 
-function RouteComponent() {
+function HelloRoute() {
   return (
     <div className="p-4">
-      {/* This is a simple message */}
+      {/* Simple message without parameters */}
       <h1 className="text-2xl font-bold mb-4">{m.hello()}</h1>
 
-      {/* This is a message with a parameter */}
-      <p>{m.some_flat_other_key({ name: "Eugen" })}</p>
+      {/* Message with required parameter */}
+      <p>{m.greeting({ name: 'Eugene' })}</p>
     </div>
-  );
+  )
 }
 ```
 
+Thanks to Paraglide's type safety, your IDE will show errors if you:
+- Try to use a message that doesn't exist
+- Forget to provide required parameters
+- Pass parameters with the wrong type
+
 <Note>
-  Your IDE will show errors if you try to use a message that doesn't exist or if
-  you forget to provide required parameters.
+  The `outputStructure: "message-modules"` option in our Vite config enables this clean import syntax. All your translations are available through the `m` object with full TypeScript support.
 </Note>
 
 ### Adding Language Detection and Switching
