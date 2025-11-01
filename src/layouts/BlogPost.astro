@@ -6,10 +6,16 @@ import { Image } from "astro:assets";
 import TableOfContents from "../components/TableOfContents";
 import AiButton from "../components/AiButton";
 
-type Props = CollectionEntry<"blog">["data"];
+type Props = CollectionEntry<"blog">["data"] & {
+  lastModified?: string;
+};
 
-const { title, description, pubDate, updatedDate, heroImage, url } =
+const { title, description, pubDate, updatedDate, heroImage, url, lastModified } =
   Astro.props;
+
+// Prioritize lastModified from git, fallback to manual updatedDate, then pubDate
+const displayDate = lastModified ? new Date(lastModified) : (updatedDate || pubDate);
+const isUpdated = lastModified || updatedDate;
 
 // Construct the LLM-friendly version URL - you can adjust this pattern
 const llmFriendlyUrl = `${Astro.url.origin}${Astro.url.pathname.replace(/\/$/, "")}/llm`;
@@ -90,8 +96,8 @@ const hasLlmVersion = !!url; // Replace with actual logic to check if LLM versio
                   <line x1="8" x2="8" y1="2" y2="6"></line>
                   <line x1="3" x2="21" y1="10" y2="10"></line>
                 </svg>
-                <span>{updatedDate ? "Updated" : "Published"} on</span>
-                <FormattedDate date={updatedDate || pubDate} />
+                <span>{isUpdated ? "Updated" : "Published"} on</span>
+                <FormattedDate date={displayDate} />
               </div>
             </div>
           </div>
