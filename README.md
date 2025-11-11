@@ -19,3 +19,9 @@ Personal website and blog built with Astro 5, React, and Tailwind CSS.
 | `bun run build`   | Build for production to `./dist/`           |
 | `bun run preview` | Preview production build locally            |
 | `bun run astro`   | Run Astro CLI commands                      |
+
+## Features
+
+- Modern, responsive design
+- Blog with MDX support
+- Interactive tech stack showcase
