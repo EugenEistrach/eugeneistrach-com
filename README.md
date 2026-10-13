@@ -1,27 +1,11 @@
 # eugeneistrach.com
 
-Personal website and blog built with Astro 5, React, and Tailwind CSS.
+Static site: one `public/index.html` plus assets. No build step.
 
-## Tech Stack
+```sh
+npx serve public -l 3000
+```
 
-- **Astro 5** - Static site generation with server rendering
-- **React 19** - Interactive components
-- **Tailwind CSS 4** - Styling
-- **MDX** - Blog content
-- **Vercel** - Deployment
+Vercel serves `public/` as-is (see `vercel.json`). Old `/blog/*` URLs redirect to the Paraglide JS TanStack Start docs.
 
-## Commands
-
-| Command           | Action                                      |
-| :---------------- | :------------------------------------------ |
-| `bun install`     | Install dependencies                        |
-| `bun run dev`     | Start dev server at `localhost:3000`        |
-| `bun run build`   | Build for production to `./dist/`           |
-| `bun run preview` | Preview production build locally            |
-| `bun run astro`   | Run Astro CLI commands                      |
-
-## Features
-
-- Modern, responsive design
-- Blog with MDX support
-- Interactive tech stack showcase
+Files in `public/assets/` are cached for a year (`immutable`). Give a changed file a new name instead of overwriting it.

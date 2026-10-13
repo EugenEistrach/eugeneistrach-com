@@ -1,22 +1,38 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "",
+  "buildCommand": "",
+  "outputDirectory": "public",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    { "source": "/blog", "destination": "https://paraglidejs.com/tanstack-start", "permanent": true },
+    { "source": "/blog/:path*", "destination": "https://paraglidejs.com/tanstack-start", "permanent": true },
+    { "source": "/assets/paraglide-tanstack-start/:path*", "destination": "https://paraglidejs.com/tanstack-start", "permanent": true },
+    { "source": "/rss.xml", "destination": "https://paraglidejs.com/tanstack-start", "permanent": true },
+    { "source": "/sitemap-index.xml", "destination": "/sitemap.xml", "permanent": true },
+    { "source": "/sitemap-0.xml", "destination": "/sitemap.xml", "permanent": true },
+    { "source": "/index", "destination": "/", "permanent": true }
+  ],
   "headers": [
     {
-      "source": "/api/spotify-now-playing",
+      "source": "/(.*)",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=5, s-maxage=5, stale-while-revalidate=10"
-        }
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" },
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" }
       ]
     },
     {
+      "source": "/assets/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    },
+    {
       "source": "/.well-known/discord",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "text/plain"
-        }
-      ]
+      "headers": [{ "key": "Content-Type", "value": "text/plain" }]
     }
   ]
 }

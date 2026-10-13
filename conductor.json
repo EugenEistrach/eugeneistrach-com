@@ -1,7 +1,7 @@
 {
   "scripts": {
-    "setup": "bun install",
-    "run": "bun run dev"
+    "setup": "true",
+    "run": "npx -y serve public -l 3000"
   },
   "runScriptMode": "nonconcurrent"
 }

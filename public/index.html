@@ -1,0 +1,785 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Eugen Eistrach</title>
+<meta name="description" content="Eugen Eistrach: mal genial, mal komplett random. Flip the coin and see which one you get today.">
+<link rel="canonical" href="https://eugeneistrach.com/">
+<meta name="theme-color" content="#241c30">
+<meta name="author" content="Eugen Eistrach">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="preload" href="/assets/fonts/unbounded.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/shantell.woff2" as="font" type="font/woff2" crossorigin>
+
+<meta property="og:type" content="profile">
+<meta property="og:site_name" content="Eugen Eistrach">
+<meta property="og:url" content="https://eugeneistrach.com/">
+<meta property="og:title" content="Eugen Eistrach">
+<meta property="og:description" content="Mal genial. Mal komplett random. Flip the coin.">
+<meta property="og:image" content="https://eugeneistrach.com/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Eugen Eistrach's whiteboard: magnet letters, sticky notes and a coin to flip">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="profile:first_name" content="Eugen">
+<meta property="profile:last_name" content="Eistrach">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Eugen Eistrach">
+<meta name="twitter:description" content="Mal genial. Mal komplett random. Flip the coin.">
+<meta name="twitter:image" content="https://eugeneistrach.com/og.jpg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Eugen Eistrach","url":"https://eugeneistrach.com/","email":"mailto:eugen.eistrach@gmail.com","image":"https://eugeneistrach.com/assets/img/me-normal-960.webp"}
+</script>
+<style>
+@font-face{font-family:"Shantell";src:url(/assets/fonts/shantell.woff2) format("woff2");font-weight:300 800;font-display:block}
+@font-face{font-family:"Unb";src:url(/assets/fonts/unbounded.woff2) format("woff2");font-weight:800;font-display:block}
+:root{
+  --wall:#241c30; --ink:#1e2229; --graphite:#666d75;
+  --blue:#2350d8; --red:#e5412f; --yellow:#ffd84d;
+  --alu:#c7cdd2; --alu-d:#8d959c;
+  --pad:clamp(8px,1.5vw,22px);
+  --hand:"Shantell","Comic Sans MS","Chalkboard SE",cursive;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;background:var(--wall)}
+body{background:var(--wall);color:var(--ink);font-family:var(--hand);font-size:18px;line-height:1.35;
+  padding:var(--pad);padding-bottom:max(var(--pad),env(safe-area-inset-bottom));min-height:100svh;overflow-x:hidden;-webkit-tap-highlight-color:transparent;
+  background-image:radial-gradient(70% 60% at 50% 0%,#3a2d4f 0%,transparent 70%)}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;text-align:inherit;touch-action:manipulation}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:4px;border-radius:6px}
+
+/* ---------- the board ---------- */
+.board{position:relative;min-height:calc(100svh - 2*var(--pad));display:flex;flex-direction:column;border-radius:6px;
+  background:
+    radial-gradient(90% 60% at 18% 0%,rgba(255,255,255,.95),transparent 60%),
+    radial-gradient(60% 50% at 90% 100%,rgba(205,214,214,.45),transparent 70%),
+    linear-gradient(165deg,#f7f9f8,#eceff0);
+  box-shadow:0 0 0 clamp(5px,.7vw,11px) var(--alu),0 0 0 calc(clamp(5px,.7vw,11px) + 1px) var(--alu-d),
+    inset 0 2px 6px rgba(0,0,0,.08),0 50px 90px -20px rgba(0,0,0,.65)}
+.surface{position:relative;flex:1;display:grid;gap:clamp(16px,2.6vh,24px) 24px;padding:clamp(20px,min(3.4vw,5vh),52px) clamp(18px,3.4vw,52px) 18px;
+  grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:auto auto 1fr;
+  grid-template-areas:
+   "name  name  name  name  photo photo"
+   "tag   tag   tag   note1 photo photo"
+   "books note2 .     note3 contact contact"}
+.ghost{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.065}
+#ink{position:absolute;inset:0;z-index:4;pointer-events:none;touch-action:none}
+.surface.pen #ink{pointer-events:auto;cursor:crosshair}
+#measure{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;overflow:visible}
+
+/* every physical thing on the board */
+.obj{position:relative;z-index:2;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;-webkit-touch-callout:none;
+  transform:translate(var(--dx,0px),var(--dy,0px)) rotate(var(--r,0deg));
+  transition:transform .85s cubic-bezier(.3,1.35,.4,1),filter .2s}
+.surface.genial .obj{transform:none}
+.surface.pile .obj{transition:filter .2s;cursor:grab}
+.obj.lift{filter:drop-shadow(0 22px 18px rgba(30,20,40,.35));cursor:grabbing}
+img{-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none}
+
+/* handwriting reacts to the state of the board */
+.hand{font-variation-settings:"INFM" 60,"BNCE" 10;transition:font-variation-settings .7s}
+.surface.genial .hand{font-variation-settings:"INFM" 0,"BNCE" 0}
+.surface.pile .hand{font-variation-settings:"INFM" 100,"BNCE" 100}
+
+/* ---------- name: black acrylic magnet letters ---------- */
+.name{grid-area:name;align-self:start;font-family:"Unb",var(--hand);font-weight:800;font-size:clamp(40px,7.6vw,124px);line-height:1;letter-spacing:0}
+.word{display:block;white-space:nowrap}
+.word + .word{margin-top:.08em}
+.mag{display:inline-block;padding:0 .018em;cursor:default;color:transparent;
+  background:linear-gradient(175deg,#4a5059 0%,#1b1e23 38%,#0e1013 100%);-webkit-background-clip:text;background-clip:text;
+  text-shadow:0 .012em 0 rgba(255,255,255,.0),0 .03em .015em rgba(0,0,0,.18),0 .07em .09em rgba(20,10,30,.22)}
+
+/* ---------- tagline, coin, tally ---------- */
+.tagbox{grid-area:tag;align-self:start;padding-top:2px}
+.tagline{font-size:clamp(26px,2.8vw,42px);font-weight:500;line-height:1.18}
+.ph{position:relative;display:inline-block;white-space:nowrap}
+.ph .ring{position:absolute;left:-7%;top:-20%;width:114%;height:140%;overflow:visible;pointer-events:none}
+.ring path{fill:none;stroke-width:3;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;opacity:0}
+.ring.on path{opacity:1;animation:draw .7s ease forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+#ringG path{stroke:var(--blue)} #ringR path{stroke:var(--red)}
+
+.controls{--coin:clamp(96px,8vw,120px);--cg:clamp(14px,1.8vw,24px);display:flex;align-items:center;gap:var(--cg);margin-top:clamp(18px,2vw,28px)}
+.surface.pile .controls{padding-left:calc(var(--coin) + var(--cg))}
+.coin{display:block;flex:none;width:var(--coin);aspect-ratio:1;border-radius:50%;perspective:600px}
+.coin .hop{display:block;width:100%;height:100%}
+.coin .inner{display:block;position:relative;width:100%;height:100%;transform-style:preserve-3d}
+.coin.idle .inner{animation:wobble 3.2s ease-in-out infinite}
+.coin.idle .hop{animation:nudge 4s ease-in-out 1.5s infinite}
+@keyframes wobble{0%,100%{transform:rotateY(-26deg)}50%{transform:rotateY(26deg)}}
+@keyframes nudge{0%,78%,100%{transform:none}84%{transform:translateY(-16px)}90%{transform:none}94%{transform:translateY(-5px)}}
+.face{position:absolute;inset:0;border-radius:50%;display:grid;place-items:center;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  background:radial-gradient(circle at 34% 30%,#fff3b8,#f2c230 45%,#c99712 100%);
+  box-shadow:inset 0 0 0 4px #b8870f,inset 0 0 0 7px #f7d867,inset 0 0 0 9px #b8870f,0 6px 14px rgba(40,25,0,.35);
+  font-weight:800;font-size:clamp(17px,1.5vw,21px);font-variation-settings:"INFM" 0,"BNCE" 0;text-align:center;line-height:1}
+.face.front{color:#1a3cae} .face.back{color:#a3200f;transform:rotateY(180deg)}
+.face small{display:block;font-size:.55em;font-weight:600;color:#5c4305;margin-top:3px}
+
+.cta{min-width:0;position:relative;z-index:6}
+.cta-btn{display:inline-flex;align-items:center;gap:10px;font-size:clamp(19px,1.6vw,23px);font-weight:700;color:var(--ink);
+  padding:10px 18px 11px;border:2.5px solid var(--ink);border-radius:999px;background:#fff;box-shadow:3px 4px 0 var(--ink);
+  transition:transform .12s,box-shadow .12s;font-variation-settings:"INFM" 0,"BNCE" 0;white-space:nowrap}
+.cta-btn:active{transform:translate(3px,4px);box-shadow:0 0 0 var(--ink)}
+.cta-btn svg{width:22px;height:22px;flex:none}
+.cta-sub{font-size:clamp(15px,1.15vw,17px);color:var(--graphite);margin-top:10px;max-width:30ch;line-height:1.3;min-height:2.6em}
+.tally{display:none;grid-template-columns:auto 1fr;gap:2px 12px;align-items:center;margin-top:10px;font-size:15px;color:var(--graphite)}
+.tally.has{display:grid}
+.tally svg{height:22px;overflow:visible}
+.tally line{stroke-width:2.4;stroke-linecap:round}
+.tally .g line{stroke:var(--blue)} .tally .r line{stroke:var(--red)}
+.tally line.new{stroke-dasharray:30;stroke-dashoffset:30;animation:draw .35s .1s ease forwards}
+
+/* ---------- polaroid ---------- */
+.photo{grid-area:photo;justify-self:end;align-self:start;width:min(100%,410px,max(260px,50vh));--r:2.5deg;--dx:-6px;--dy:6px}
+.pola{display:block;width:100%;perspective:1400px}
+.pola .card{display:block;position:relative;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.3,1.3,.4,1)}
+.pola.flipped .card{transform:rotateY(180deg)}
+.side{display:block;background:#fdfdfb;padding:12px 12px 0;box-shadow:0 1px 1px rgba(0,0,0,.08),0 18px 34px -10px rgba(30,20,40,.5);
+  backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.side.b{position:absolute;inset:0;transform:rotateY(180deg)}
+.side picture{display:block}
+.side img{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:cover;background:#222}
+.side .cap{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:clamp(17px,1.45vw,21px);font-weight:500;padding:10px 4px 14px;color:var(--ink)}
+.side .cap i{font-style:normal;font-size:.72em;color:var(--graphite);white-space:nowrap}
+.magnet{position:absolute;left:50%;top:-12px;width:26px;height:26px;margin-left:-13px;border-radius:50%;z-index:3;
+  background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.7),#e5412f 45%);box-shadow:0 3px 5px rgba(0,0,0,.3)}
+
+/* ---------- sticky notes ---------- */
+.note{width:clamp(128px,min(12vw,19vh),180px);aspect-ratio:1;padding:16px 14px;font-size:clamp(16px,1.3vw,20px);font-weight:500;line-height:1.18;
+  background:linear-gradient(170deg,#ffe36e,#ffd84d 40%,#f7cd3c);
+  box-shadow:0 1px 1px rgba(0,0,0,.08),0 14px 16px -10px rgba(60,45,0,.5);
+  display:flex;align-items:center;justify-content:center;text-align:center;justify-self:start;align-self:start}
+.note::before{content:"";position:absolute;left:0;right:0;top:0;height:20%;background:linear-gradient(rgba(0,0,0,.05),transparent)}
+.n1{grid-area:note1;--r:-4deg;--dx:6px;--dy:10px}
+.n2{grid-area:note2;--r:3deg;--dx:6px;--dy:4px;align-self:end}
+.n3{grid-area:note3;--r:-2deg;--dx:10px;--dy:-4px;align-self:end}
+
+/* ---------- books ---------- */
+.books{grid-area:books;align-self:end;justify-self:start;display:flex;flex-direction:column;align-items:flex-start;width:min(100%,210px)}
+.book{height:clamp(30px,2.7vw,38px);border-radius:3px 5px 5px 3px;color:#ece8de;font-size:clamp(13px,1.05vw,15px);font-weight:700;
+  display:flex;align-items:center;padding:0 12px;white-space:nowrap;font-variation-settings:"INFM" 0,"BNCE" 0;
+  box-shadow:inset 0 -3px 0 rgba(0,0,0,.25),inset 6px 0 0 rgba(255,255,255,.08),0 4px 8px -4px rgba(0,0,0,.45)}
+.book.k1{width:92%;background:#2f3a48;--dx:10px}
+.book.k2{width:100%;background:#4a3558;--dx:-4px}
+.book.k3{width:86%;background:#24433d;--dx:6px}
+
+/* ---------- contact card ---------- */
+.contact{grid-area:contact;align-self:end;justify-self:end;width:min(100%,340px);padding:16px 20px 18px;background:#fffefa;
+  background-image:repeating-linear-gradient(transparent 0 33px,rgba(35,80,216,.16) 33px 34px);background-position:0 46px;
+  box-shadow:0 1px 1px rgba(0,0,0,.08),0 16px 26px -12px rgba(30,20,40,.45);--r:1.5deg;--dx:-8px;--dy:-4px;line-height:34px}
+.contact::before{content:"";position:absolute;left:0;right:0;top:46px;height:2px;background:rgba(229,65,47,.45)}
+.contact h2{font-size:24px;font-weight:700;line-height:30px;margin-bottom:14px}
+.contact a{display:block;font-size:clamp(16px,1.3vw,19px);font-weight:600;text-decoration:none;color:var(--blue);width:max-content;max-width:100%;overflow-wrap:anywhere}
+
+/* ---------- tray ---------- */
+.tray{position:relative;z-index:3;height:clamp(48px,4.6vw,60px);margin:0 -2px -2px;border-radius:0 0 6px 6px;
+  background:linear-gradient(#e1e5e8,#b7bec4 55%,#9aa2a9);box-shadow:inset 0 2px 0 rgba(255,255,255,.7),0 -2px 6px rgba(0,0,0,.12);
+  display:flex;align-items:center;gap:clamp(8px,1.4vw,20px);padding:0 clamp(12px,3vw,46px)}
+.marker{width:clamp(66px,8vw,118px);height:clamp(18px,1.6vw,22px);border-radius:4px 10px 10px 4px;position:relative;flex:none;
+  background:linear-gradient(#f4f4f4,#d9dcdf);box-shadow:0 3px 4px rgba(0,0,0,.25);transition:transform .25s cubic-bezier(.3,1.5,.5,1)}
+.marker::before{content:"";position:absolute;right:-12%;top:12%;bottom:12%;width:24%;border-radius:2px 8px 8px 2px;background:var(--mc)}
+.marker::after{content:"";position:absolute;left:10%;top:0;bottom:0;width:22%;background:var(--mc);opacity:.85}
+.marker.on{transform:translateY(-12px) rotate(-6deg)}
+.eraser{width:clamp(56px,6vw,86px);height:clamp(24px,2.2vw,30px);border-radius:4px;background:linear-gradient(#3b3f46 0 55%,#d8d2c4 55%);flex:none;
+  box-shadow:0 3px 4px rgba(0,0,0,.25);transition:transform .2s}
+.eraser:active{transform:translateX(6px)}
+.traynote{margin-left:auto;font-size:13px;color:#30353a;white-space:nowrap;font-variation-settings:"INFM" 0}
+.lang{display:flex;border:1.5px solid #4a5157;border-radius:999px;overflow:hidden;font-size:13px;font-weight:700;font-variation-settings:"INFM" 0;flex:none}
+.lang button{padding:4px 9px;color:#30353a}
+.lang button[aria-pressed=true]{background:#3a4046;color:#eef0f1}
+.hint{position:absolute;right:clamp(16px,3vw,52px);bottom:4px;z-index:1;font-size:16px;color:#6b7279;pointer-events:none;transform:rotate(-2deg)}
+
+@media (hover:hover){
+  .cta-btn:hover{transform:translate(-1px,-1px);box-shadow:4px 5px 0 var(--ink)}
+  .coin:hover .face{filter:brightness(1.06)}
+  .contact a:hover{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px}
+}
+
+/* ---------- responsive ---------- */
+@media (max-width:1099px){
+  .surface{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:auto auto auto auto 1fr;
+    grid-template-areas:
+     "name name name name"
+     "tag tag tag tag"
+     "photo photo note1 ."
+     "photo photo note3 note2"
+     "books contact contact contact"}
+  .name{font-size:clamp(40px,10.4vw,124px)}
+  .photo{justify-self:start}
+  .n2,.n3{align-self:start}
+}
+@media (max-width:699px){
+  body{font-size:16px}
+  .surface{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 14px;grid-template-rows:auto;
+    grid-template-areas:
+     "name name"
+     "tag tag"
+     "photo photo"
+     "note1 note2"
+     "books note3"
+     "contact contact"}
+  .name{font-size:clamp(34px,11vw,64px)}
+  .tagline{font-size:clamp(25px,7.4vw,32px)}
+  .controls{align-items:flex-start}
+  .cta-btn{padding:9px 14px 10px}
+  .photo{justify-self:center;width:min(92%,360px)}
+  .note{width:min(100%,150px)}
+  .n2{justify-self:end}
+  .n3{justify-self:end}
+  .books{width:100%}
+  .traynote,.hint{display:none}
+  .tray{gap:8px;padding:0 12px}
+  .marker{width:clamp(38px,12.5vw,66px)}
+  .eraser{width:clamp(36px,10vw,56px)}
+  .lang{margin-left:auto}
+  .lang button{padding:8px 10px}
+}
+@media (max-width:399px){
+  .controls{--coin:80px;--cg:12px}
+  .cta-btn{font-size:18px;padding:8px 13px 9px}
+  .cta-btn svg{display:none}
+  .side .cap{font-size:15px}
+}
+@media (prefers-reduced-motion:reduce){
+  .coin.idle .inner,.coin.idle .hop{animation:none}
+  .obj{transition-duration:.01s}
+}
+</style>
+</head>
+<body>
+<main class="board" id="board">
+  <div class="surface board-state" id="surface">
+    <svg class="ghost" viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true">
+      <g fill="none" stroke="#2c3138" stroke-width="3" stroke-linecap="round">
+        <path d="M620 80 q20 -30 40 0 t40 0 M720 70 l30 30 M750 70 l-30 30"/>
+        <path d="M80 470 c40 -40 90 40 140 -10 s80 30 120 -20"/>
+        <path d="M860 440 l50 0 l-8 -8 M910 440 l-8 8"/>
+      </g>
+      <g fill="#2c3138" font-family="Shantell, cursive" font-size="34">
+        <text x="520" y="330" data-i18n="ghost">TODO: sleep</text>
+        <text x="90" y="560">∫ e^(iπ) + 1 = 0</text>
+        <text x="760" y="560">v2?</text>
+      </g>
+    </svg>
+    <canvas id="ink" aria-hidden="true"></canvas>
+    <svg id="measure" aria-hidden="true"></svg>
+
+    <h1 class="name" aria-label="Eugen Eistrach">
+      <span class="word" aria-hidden="true"><span class="mag obj" style="--r:-4deg;--dy:3px">E</span><span class="mag obj" style="--r:3deg;--dy:-2px">u</span><span class="mag obj" style="--r:-2deg;--dy:5px">g</span><span class="mag obj" style="--r:5deg">e</span><span class="mag obj" style="--r:-3deg;--dy:-4px">n</span></span>
+      <span class="word" aria-hidden="true"><span class="mag obj" style="--r:2deg;--dy:-2px">E</span><span class="mag obj" style="--r:-5deg;--dy:4px">i</span><span class="mag obj" style="--r:4deg">s</span><span class="mag obj" style="--r:-2deg;--dy:5px">t</span><span class="mag obj" style="--r:6deg;--dy:-3px">r</span><span class="mag obj" style="--r:-4deg;--dy:3px">a</span><span class="mag obj" style="--r:2deg;--dy:-5px">c</span><span class="mag obj" style="--r:-6deg;--dy:3px">h</span></span>
+    </h1>
+
+    <div class="tagbox">
+      <p class="tagline hand">
+        <span class="ph">Mal genial.<svg class="ring" id="ringG" aria-hidden="true"><path pathLength="1"/></svg></span>
+        <span class="ph">Mal komplett random.<svg class="ring" id="ringR" aria-hidden="true"><path pathLength="1"/></svg></span>
+      </p>
+      <div class="controls">
+        <button class="coin obj idle" id="coin" data-i18n-label="coinLabel" aria-label="Flip the coin">
+          <span class="hop" id="coinHop"><span class="inner" id="coinInner">
+            <span class="face front"><span>genial<small>mal</small></span></span>
+            <span class="face back"><span>random<small>komplett</small></span></span>
+          </span></span>
+        </button>
+        <div class="cta">
+          <button class="cta-btn hand" id="flipBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H6M11 6l-6 6 6 6"/></svg>
+            <span data-i18n="flip">Flip the coin</span>
+          </button>
+          <p class="cta-sub hand" id="ctaSub" aria-live="polite">It decides whether this page is genial right now, or komplett random.</p>
+          <div class="tally hand" id="tally">
+            <span>genial</span><svg class="g" id="tallyG" aria-hidden="true"></svg>
+            <span>random</span><svg class="r" id="tallyR" aria-hidden="true"></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="photo obj">
+      <span class="magnet"></span>
+      <button class="pola" id="pola" data-i18n-label="photoLabel" aria-label="Flip the photo">
+        <span class="card">
+          <span class="side a"><picture><source type="image/avif" srcset="/assets/img/me-normal-480.avif 480w, /assets/img/me-normal-640.avif 640w, /assets/img/me-normal-960.avif 960w" sizes="(max-width:699px) min(84vw,336px), 386px"><img data-i18n-alt="alt1" alt="Eugen at his desk, coffee in hand" src="/assets/img/me-normal-640.webp" srcset="/assets/img/me-normal-480.webp 480w, /assets/img/me-normal-640.webp 640w, /assets/img/me-normal-960.webp 960w" sizes="(max-width:699px) min(84vw,336px), 386px" width="960" height="960" fetchpriority="high" draggable="false"></picture><span class="cap hand"><span data-i18n="cap1">me, on a normal day</span><i data-i18n="turn">flip ↻</i></span></span>
+          <span class="side b"><picture><source type="image/avif" data-srcset="/assets/img/me-genial-480.avif 480w, /assets/img/me-genial-640.avif 640w, /assets/img/me-genial-960.avif 960w" sizes="(max-width:699px) min(84vw,336px), 386px"><img data-i18n-alt="alt2" alt="Eugen under a neon sign that reads Quantum Engineer" data-src="/assets/img/me-genial-640.webp" data-srcset="/assets/img/me-genial-480.webp 480w, /assets/img/me-genial-640.webp 640w, /assets/img/me-genial-960.webp 960w" sizes="(max-width:699px) min(84vw,336px), 386px" width="960" height="960" decoding="async" draggable="false"></picture><span class="cap hand"><span data-i18n="cap2">me, on a genial day</span><i data-i18n="turn">flip ↻</i></span></span>
+        </span>
+      </button>
+    </div>
+
+    <div class="note n1 obj hand" data-i18n="note1">Good code somehow works ☺</div>
+    <div class="note n2 obj hand" data-i18n="note2">Reality is a feature, not a bug.</div>
+    <div class="note n3 obj hand" data-i18n="note3">ship it :)</div>
+
+    <div class="books" aria-hidden="true">
+      <span class="book k1 obj">Quantum stuff</span>
+      <span class="book k2 obj">Probably works</span>
+      <span class="book k3 obj">Vibe → Reality</span>
+    </div>
+
+    <div class="contact obj">
+      <h2 class="hand" data-i18n="hi">Say hi</h2>
+      <a class="hand" href="mailto:eugen.eistrach@gmail.com">eugen.eistrach@gmail.com</a>
+    </div>
+
+    <p class="hint hand" data-i18n="hint" aria-hidden="true">the markers work ↓</p>
+  </div>
+
+  <div class="tray">
+    <button class="marker" data-c="#1e2229" style="--mc:#1e2229" data-i18n-label="mk1" aria-label="Black marker" aria-pressed="false"></button>
+    <button class="marker" data-c="#2350d8" style="--mc:#2350d8" data-i18n-label="mk2" aria-label="Blue marker" aria-pressed="false"></button>
+    <button class="marker" data-c="#e5412f" style="--mc:#e5412f" data-i18n-label="mk3" aria-label="Red marker" aria-pressed="false"></button>
+    <button class="eraser" id="eraser" data-i18n-label="erase" aria-label="Wipe the board"></button>
+    <span class="traynote">© <span id="yr">2026</span> Eugen Eistrach</span>
+    <div class="lang" role="group" aria-label="Sprache / Language">
+      <button data-lang="de" lang="de" aria-pressed="false">DE</button><button data-lang="en" lang="en" aria-pressed="true">EN</button>
+    </div>
+  </div>
+</main>
+
+<script>
+(() => {
+const $ = s => document.querySelector(s);
+const surface = $('#surface');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const coarse = matchMedia('(pointer: coarse)').matches;
+$('#yr').textContent = new Date().getFullYear();
+const store = {
+  get(k,d){ try{ const v=localStorage.getItem('ee:'+k); return v==null?d:JSON.parse(v); }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem('ee:'+k, JSON.stringify(v)); }catch(e){} }
+};
+
+/* =========================================================
+   LANGUAGE: the visitor's browser language (German or English),
+   unless they picked one with the toggle
+   ========================================================= */
+const T = {
+  de:{ flip:'Münze werfen', again:'Nochmal werfen', coinLabel:'Münze werfen',
+       sub0:'Sie entscheidet, ob diese Seite gerade genial ist oder komplett random.',
+       subG:'Genial. Alles sitzt auf dem Raster, auf den Pixel genau.',
+       subR:'Komplett random. Alles darf angefasst, geworfen und gestapelt werden.',
+       subRt:'Komplett random. Halt irgendwas gedrückt, dann wirf es durch die Gegend.',
+       cap1:'ich, an einem normalen Tag', cap2:'ich, an einem genialen Tag', turn:'umdrehen ↻', photoLabel:'Foto umdrehen',
+       alt1:'Eugen am Schreibtisch, Kaffee in der Hand', alt2:'Eugen unter einem Neonschild mit der Aufschrift Quantum Engineer',
+       note1:'Guter Code funktioniert irgendwie ☺', note2:'Realität ist ein Feature, kein Bug.', note3:'ship it :)',
+       hi:'Sag hallo', hint:'die Stifte funktionieren ↓', ghost:'TODO: schlafen',
+       mk1:'Schwarzer Stift', mk2:'Blauer Stift', mk3:'Roter Stift', erase:'Tafel wischen',
+       desc:'Eugen Eistrach: mal genial, mal komplett random. Wirf die Münze und schau, was du heute bekommst.' },
+  en:{ flip:'Flip the coin', again:'Flip again', coinLabel:'Flip the coin',
+       sub0:'It decides whether this page is genial right now, or komplett random.',
+       subG:'Genial. Everything sits on the grid, pixel-perfect.',
+       subR:'Komplett random. Grab anything, throw it, stack it.',
+       subRt:'Komplett random. Press and hold anything, then throw it.',
+       cap1:'me, on a normal day', cap2:'me, on a genial day', turn:'flip ↻', photoLabel:'Flip the photo',
+       alt1:'Eugen at his desk, coffee in hand', alt2:'Eugen under a neon sign that reads Quantum Engineer',
+       note1:'Good code somehow works ☺', note2:'Reality is a feature, not a bug.', note3:'ship it :)',
+       hi:'Say hi', hint:'the markers work ↓', ghost:'TODO: sleep',
+       mk1:'Black marker', mk2:'Blue marker', mk3:'Red marker', erase:'Wipe the board',
+       desc:'Eugen Eistrach: mal genial, mal komplett random. Flip the coin and see which one you get today.' }
+};
+const browserLang = () => {
+  const first = (navigator.languages || [navigator.language || '']).find(l => /^(de|en)\b/i.test(l)) || '';
+  return first.toLowerCase().startsWith('de') ? 'de' : 'en';
+};
+let lang = T[store.get('lang', null)] ? store.get('lang') : browserLang();
+const t = k => T[lang][k];
+function applyLang(){
+  document.documentElement.lang = lang;
+  document.querySelector('meta[name=description]').content = t('desc');
+  document.querySelectorAll('[data-i18n]').forEach(el => el.textContent = t(el.dataset.i18n));
+  document.querySelectorAll('[data-i18n-label]').forEach(el => el.setAttribute('aria-label', t(el.dataset.i18nLabel)));
+  document.querySelectorAll('[data-i18n-alt]').forEach(el => el.alt = t(el.dataset.i18nAlt));
+  document.querySelectorAll('.lang button').forEach(b => b.setAttribute('aria-pressed', b.dataset.lang===lang));
+  setSub();
+  if(state==='genial') drawMeasure(true);
+}
+document.querySelectorAll('.lang button').forEach(b => b.addEventListener('click', () => { lang = b.dataset.lang; store.set('lang', lang); applyLang(); }));
+
+/* =========================================================
+   STATE: 'board' (as found) → 'genial' or 'pile' (random)
+   ========================================================= */
+let state = 'board', lastRes = null;
+const tally = store.get('tally', {g:0, r:0});
+function setSub(){
+  $('#ctaSub').textContent = lastRes==='genial' ? t('subG') : lastRes==='random' ? t(coarse ? 'subRt' : 'subR') : t('sub0');
+  $('#flipBtn span').textContent = lastRes ? t('again') : t('flip');
+}
+
+function drawTally(el, n, fresh){
+  let s = '', x = 0;
+  for(let i=0;i<n;i++){
+    const cls = (fresh && i===n-1) ? ' class="new"' : '';
+    if(i % 5 === 4){ s += `<line${cls} x1="${x-30}" y1="19" x2="${x+2}" y2="4"/>`; x += 14; }
+    else { s += `<line${cls} x1="${x}" y1="3" x2="${x+(i%2?1:-1)}" y2="20"/>`; x += 8; }
+  }
+  const w = Math.max(x, 8);
+  el.setAttribute('width', w); el.setAttribute('viewBox', `-2 0 ${w+4} 22`); el.innerHTML = s;
+}
+function renderTally(fresh){
+  drawTally($('#tallyG'), tally.g, fresh==='genial'); drawTally($('#tallyR'), tally.r, fresh==='random');
+  $('#tally').classList.toggle('has', tally.g + tally.r > 0);
+}
+renderTally();
+
+const RING = [[60,4],[30,0,2,8,3,21],[4,35,40,39,66,36],[92,33,99,22,96,13],[92,3,70,1,48,5]];
+function ring(which){
+  const on = $(which==='genial'?'#ringG':'#ringR'), off = $(which==='genial'?'#ringR':'#ringG');
+  const r = on.getBoundingClientRect(), w = r.width, h = r.height;
+  const X = v => (v/100*w).toFixed(1), Y = v => (v/40*h).toFixed(1), j = () => (Math.random()-.5)*4;
+  let d = `M${X(RING[0][0]+j())} ${Y(RING[0][1])}`;
+  for(const c of RING.slice(1)) d += ` C ${X(c[0]+j())} ${Y(c[1])}, ${X(c[2]+j())} ${Y(c[3])}, ${X(c[4]+j())} ${Y(c[5])}`;
+  on.setAttribute('viewBox', `0 0 ${w} ${h}`); on.firstChild.setAttribute('d', d);
+  off.classList.remove('on'); on.classList.remove('on'); void on.getBoundingClientRect(); on.classList.add('on');
+}
+
+/* the physics engine only loads once someone reaches for the coin */
+let M = null, matterP = null;
+function loadMatter(){
+  return matterP ||= new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = '/assets/matter.min.js'; s.async = true;
+    s.onload = () => res(M = window.Matter);
+    s.onerror = () => { matterP = null; rej(); };
+    document.head.append(s);
+  });
+}
+
+/* ---------- the coin ---------- */
+const coin = $('#coin'), coinInner = $('#coinInner'), coinHop = $('#coinHop');
+let coinDeg = 0, flipping = false, flips = 0;
+function flip(){
+  if(flipping) return;
+  flipping = true; coin.classList.remove('idle');
+  // the first flip of every visit lands on random, so nobody misses the show
+  const res = flips===0 ? 'random' : (Math.random() < .5 ? 'genial' : 'random');
+  flips++;
+  const ready = res==='random' ? loadMatter().catch(() => null) : null;
+  const target = (res==='genial'?0:180) + 360*(4 + Math.floor(Math.random()*2));
+  const from = coinDeg % 360; coinDeg = target;
+  const dur = reduce ? 10 : 1100;
+  coinInner.animate([{transform:`rotateY(${from}deg)`},{transform:`rotateY(${target}deg)`}],{duration:dur,easing:'cubic-bezier(.15,.6,.25,1)',fill:'forwards'});
+  if(!reduce) coinHop.animate([{transform:'translateY(0) scale(1)'},{transform:'translateY(-90px) scale(1.15)',offset:.45},{transform:'translateY(0) scale(1)'}],{duration:dur,easing:'ease-in-out'});
+  setTimeout(async () => { await ready; flipping = false; land(res); }, dur + 40);
+}
+coin.addEventListener('click', flip);
+$('#flipBtn').addEventListener('click', flip);
+['pointerenter','touchstart','focus'].forEach(ev => {
+  coin.addEventListener(ev, () => loadMatter().catch(() => {}), {once:true, passive:true});
+  $('#flipBtn').addEventListener(ev, () => loadMatter().catch(() => {}), {once:true, passive:true});
+});
+
+function land(res){
+  // no physics (offline?): fall back to the tidy version
+  if(res==='random' && !M && state!=='pile') res = 'genial';
+  lastRes = res;
+  if(res==='genial') tally.g++; else tally.r++;
+  store.set('tally', tally); renderTally(res); ring(res); setSub();
+  if(res==='genial'){ if(state==='pile') restore(goGenial); else goGenial(); }
+  else { if(state==='pile') shake(); else collapse(); }
+}
+
+/* =========================================================
+   GENIAL: everything snaps to the grid and gets measured
+   ========================================================= */
+const measure = $('#measure');
+let measureTimer;
+function goGenial(){
+  measure.innerHTML = '';
+  surface.classList.remove('board-state');
+  surface.classList.add('genial'); state = 'genial';
+  clearTimeout(measureTimer);
+  measureTimer = setTimeout(() => drawMeasure(), reduce ? 0 : 820);
+}
+function rel(el){
+  const s = surface.getBoundingClientRect(), r = el.getBoundingClientRect();
+  return {x:r.left-s.left, y:r.top-s.top, w:r.width, h:r.height};
+}
+function drawMeasure(instant){
+  if(state!=='genial') return;
+  const W = surface.clientWidth, H = surface.clientHeight;
+  measure.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  const cs = getComputedStyle(surface);
+  const cols = cs.gridTemplateColumns.split(' ').map(parseFloat);
+  const gap = parseFloat(cs.columnGap), padL = parseFloat(cs.paddingLeft);
+  const B = '#2350d8', A = n => instant ? '' : `style="opacity:0;animation:mfade .4s ${n}ms forwards"`;
+  let out = '', d = 0;
+  let x = padL;
+  cols.forEach(c => {
+    [x, x+c].forEach(xx => { out += `<line x1="${xx}" y1="0" x2="${xx}" y2="${H}" stroke="${B}" stroke-opacity=".28" stroke-width="1" stroke-dasharray="5 7" ${A(d)}/>`; d += 25; });
+    x += c + gap;
+  });
+  const dim = (r, label) => {
+    const y = r.y - 14, x1 = r.x, x2 = r.x + r.w, lw = label.length*7.4 + 14;
+    out += `<g ${A(d)}>
+      <path pathLength="1" d="M${x1} ${y} H${x2}" stroke="${B}" stroke-width="1.6" fill="none" ${instant?'':`style="stroke-dasharray:1;stroke-dashoffset:1;animation:mdraw .5s ${d}ms forwards"`}/>
+      <path d="M${x1} ${y-6} V${y+6} M${x2} ${y-6} V${y+6}" stroke="${B}" stroke-width="1.6"/>
+      <rect x="${(x1+x2)/2-lw/2}" y="${y-10}" width="${lw}" height="19" rx="4" fill="#f3f5f4"/>
+      <text x="${(x1+x2)/2}" y="${y+4}" text-anchor="middle" font-family="Shantell, cursive" font-size="13" font-weight="600" fill="${B}">${label}</text></g>`;
+    d += 70;
+  };
+  const letters = [...document.querySelectorAll('.mag')].map(rel);
+  const nx = Math.min(...letters.map(r=>r.x)), ny = Math.min(...letters.map(r=>r.y));
+  dim({x:nx, y:ny, w:Math.max(...letters.map(r=>r.x+r.w)) - nx}, Math.round(Math.max(...letters.map(r=>r.x+r.w)) - nx)+' px');
+  document.querySelectorAll('.word').forEach(w => {
+    const r = rel(w), y = r.y + r.h*.8;
+    out += `<line x1="${r.x-10}" y1="${y}" x2="${r.x+r.w+10}" y2="${y}" stroke="${B}" stroke-opacity=".45" stroke-width="1" ${A(d)}/>`; d += 40;
+  });
+  document.querySelectorAll('.photo,.note,.contact,.books').forEach(el => {
+    if(!el.offsetParent) return;
+    const r = rel(el); if(el.classList.contains('photo')) r.y -= 16;
+    dim(r, Math.round(r.w)+' px');
+  });
+  const c = rel(coin);
+  out += `<g ${A(d)}><circle cx="${c.x+c.w/2}" cy="${c.y+c.h/2}" r="${c.w/2+8}" fill="none" stroke="${B}" stroke-width="1.4" stroke-dasharray="4 5"/>
+    <path d="M${c.x+c.w/2} ${c.y-14} V${c.y+c.h+14} M${c.x-14} ${c.y+c.h/2} H${c.x+c.w+14}" stroke="${B}" stroke-opacity=".5" stroke-width="1"/></g>`;
+  measure.innerHTML = `<style>@keyframes mfade{to{opacity:1}}@keyframes mdraw{to{stroke-dashoffset:0}}</style>` + out;
+}
+
+/* =========================================================
+   RANDOM: real physics. Everything falls, you can throw it.
+   ========================================================= */
+const STEP = 1000/60;
+let acc = 0, engine = null, bodies = [], raf = 0, last = 0, drag = null, suppressClick = false, zTop = 10;
+
+function objs(){ return [...surface.querySelectorAll('.obj')].filter(el => el.offsetParent !== null); }
+function px(v){ return parseFloat(v) || 0; }
+
+function collapse(){
+  const {Engine, Bodies, Body, Composite} = M;
+  measure.innerHTML = '';
+  const cs = getComputedStyle(surface);
+  surface.style.height = surface.offsetHeight + 'px';
+  surface.style.gridTemplateRows = cs.gridTemplateRows;
+  const genial = state === 'genial';
+  const list = objs().map(el => {
+    const ecs = getComputedStyle(el);
+    let l = 0, tp = 0, n = el;
+    while(n && n !== surface){ l += n.offsetLeft; tp += n.offsetTop; n = n.offsetParent; }
+    return {el, w:el.offsetWidth, h:el.offsetHeight, l, t:tp,
+      dx: genial ? 0 : px(ecs.getPropertyValue('--dx')), dy: genial ? 0 : px(ecs.getPropertyValue('--dy')),
+      r: genial ? 0 : px(ecs.getPropertyValue('--r'))};
+  });
+  list.forEach(o => {
+    const s = o.el.style;
+    s.position = 'absolute'; s.gridArea = 'auto'; s.left = o.l + 'px'; s.top = o.t + 'px';
+    s.width = o.w + 'px'; s.height = o.h + 'px'; s.margin = '0';
+    s.transform = `translate(${o.dx}px,${o.dy}px) rotate(${o.r}deg)`;
+  });
+  surface.classList.remove('board-state','genial');
+  surface.classList.add('pile'); state = 'pile';
+
+  engine = Engine.create({enableSleeping:true});
+  engine.gravity.y = 1.15;
+  const W = surface.clientWidth, H = surface.clientHeight, TH = 200;
+  const walls = [
+    Bodies.rectangle(W/2, H + TH/2, W*3, TH, {isStatic:true, friction:.9}),
+    Bodies.rectangle(-TH/2, H/2 - H, TH, H*4, {isStatic:true}),
+    Bodies.rectangle(W + TH/2, H/2 - H, TH, H*4, {isStatic:true}),
+    Bodies.rectangle(W/2, -H*1.5, W*3, TH, {isStatic:true})
+  ];
+  bodies = list.map(o => {
+    const cx = o.l + o.w/2, cy = o.t + o.h/2;
+    const isLetter = o.el.classList.contains('mag');
+    const opts = {angle:o.r*Math.PI/180, restitution:.2, friction:.6, frictionAir:.012, density: isLetter ? .003 : .0012};
+    const b = o.el === coin
+      ? Bodies.circle(cx + o.dx, cy + o.dy, o.w/2, {...opts, restitution:.45})
+      : Bodies.rectangle(cx + o.dx, cy + o.dy, o.w, isLetter ? o.h*.82 : o.h, {...opts, chamfer:{radius:Math.min(6, o.w/5, o.h/5)}});
+    b.el = o.el; b.cx = cx; b.cy = cy;
+    Body.setVelocity(b, {x:(Math.random()-.5)*4, y:-Math.random()*4});
+    Body.setAngularVelocity(b, (Math.random()-.5)*.14);
+    return b;
+  });
+  Composite.add(engine.world, [...walls, ...bodies]);
+  last = performance.now(); acc = 0;
+  cancelAnimationFrame(raf); raf = requestAnimationFrame(step);
+  const sb = surface.getBoundingClientRect().bottom;
+  if(sb > innerHeight + 40) setTimeout(() => scrollTo({top: scrollY + sb - innerHeight + 80, behavior: reduce?'auto':'smooth'}), 450);
+}
+
+function step(now){
+  acc += Math.min(now - last, 100); last = now;
+  let n = 0;
+  while(acc >= STEP && n < 4){ M.Engine.update(engine, STEP); acc -= STEP; n++; }
+  if(n === 4) acc = 0;
+  for(const b of bodies){
+    if(b.isSleeping) continue;
+    b.el.style.transform = `translate(${(b.position.x - b.cx).toFixed(2)}px,${(b.position.y - b.cy).toFixed(2)}px) rotate(${b.angle.toFixed(4)}rad)`;
+  }
+  raf = requestAnimationFrame(step);
+}
+
+function shake(){
+  bodies.forEach(b => {
+    M.Sleeping.set(b, false);
+    M.Body.setVelocity(b, {x:(Math.random()-.5)*22, y:-(10 + Math.random()*16)});
+    M.Body.setAngularVelocity(b, (Math.random()-.5)*.5);
+  });
+}
+
+function teardown(){
+  cancelAnimationFrame(raf); raf = 0;
+  if(hold){ clearTimeout(hold.timer); hold = null; }
+  if(drag){ drag.b.el.classList.remove('lift'); drag = null; }
+  if(engine){ M.Composite.clear(engine.world); M.Engine.clear(engine); }
+  engine = null;
+}
+function cleanStyles(el){ ['position','left','top','width','height','margin','transition','transform','z-index','grid-area'].forEach(p => el.style.removeProperty(p)); }
+
+function restore(done, instant){
+  const list = bodies; teardown();
+  list.forEach(b => {
+    const a = ((b.angle % (2*Math.PI)) + 3*Math.PI) % (2*Math.PI) - Math.PI;
+    b.el.style.transform = `translate(${b.position.x - b.cx}px,${b.position.y - b.cy}px) rotate(${a}rad)`;
+  });
+  surface.getBoundingClientRect();
+  const dur = (instant || reduce) ? 0 : 900;
+  list.forEach((b,i) => {
+    b.el.style.transition = dur ? `transform ${dur}ms cubic-bezier(.3,1.25,.4,1) ${i*22}ms` : 'none';
+    b.el.style.transform = 'translate(0px,0px) rotate(0rad)';
+  });
+  surface.classList.remove('pile');
+  surface.classList.add('genial'); state = 'genial';
+  setTimeout(() => {
+    list.forEach(b => cleanStyles(b.el));
+    surface.style.removeProperty('height'); surface.style.removeProperty('grid-template-rows');
+    bodies = [];
+    done && done();
+  }, dur ? dur + list.length*22 + 30 : 0);
+  if(!instant && !reduce){
+    const top = surface.getBoundingClientRect().top;
+    if(top < -40) scrollTo({top: scrollY + top - 20, behavior:'smooth'});
+  }
+}
+
+/* ---------- grabbing and throwing ---------- */
+function pt(e){ const r = surface.getBoundingClientRect(); return {x:e.clientX - r.left, y:e.clientY - r.top}; }
+// mouse grabs right away; a finger has to press and hold, so swiping over the pile still scrolls the page
+const HOLD = 220;
+let hold = null;
+surface.addEventListener('pointerdown', e => {
+  if(state !== 'pile' || !engine || e.button > 0) return;
+  const el = e.target.closest('.obj'); if(!el) return;
+  const b = bodies.find(b => b.el === el); if(!b) return;
+  if(e.pointerType === 'touch'){
+    if(drag || hold) return;
+    hold = {b, id:e.pointerId, sx:e.clientX, sy:e.clientY, clientX:e.clientX, clientY:e.clientY};
+    hold.timer = setTimeout(() => { const h = hold; hold = null; if(engine) grab(h.b, h, h.id, true); }, HOLD);
+    return;
+  }
+  grab(b, e, e.pointerId, false);
+});
+function grab(b, at, id, touch){
+  const p = pt(at);
+  M.Sleeping.set(b, false);
+  const c = M.Constraint.create({pointA:p, bodyB:b, pointB:{x:p.x - b.position.x, y:p.y - b.position.y}, stiffness:.18, damping:.1, length:0});
+  M.Composite.add(engine.world, c);
+  b.el.style.zIndex = ++zTop; b.el.classList.add('lift');
+  drag = {c, b, sx:at.clientX, sy:at.clientY, moved:false, id, touch};
+  if(touch && navigator.vibrate) navigator.vibrate(8);
+}
+addEventListener('pointermove', e => {
+  if(hold && e.pointerId === hold.id){
+    hold.clientX = e.clientX; hold.clientY = e.clientY;
+    if(Math.hypot(e.clientX-hold.sx, e.clientY-hold.sy) > 8){ clearTimeout(hold.timer); hold = null; }
+    return;
+  }
+  if(!drag || e.pointerId !== drag.id) return;
+  drag.c.pointA = pt(e);
+  if(!drag.moved && Math.hypot(e.clientX-drag.sx, e.clientY-drag.sy) > 6) drag.moved = true;
+  if(drag.moved) e.preventDefault();
+}, {passive:false});
+// once a finger holds something, the page must not scroll under it
+surface.addEventListener('touchmove', e => { if(drag && drag.touch) e.preventDefault(); }, {passive:false});
+surface.addEventListener('contextmenu', e => { if(state === 'pile') e.preventDefault(); });
+const release = e => {
+  if(hold && e.pointerId === hold.id){ clearTimeout(hold.timer); hold = null; return; }
+  if(!drag || e.pointerId !== drag.id) return;
+  if(drag.moved || drag.touch){ suppressClick = true; setTimeout(() => suppressClick = false, 60); }
+  if(engine) M.Composite.remove(engine.world, drag.c);
+  drag.b.el.classList.remove('lift');
+  drag = null;
+};
+addEventListener('pointerup', release); addEventListener('pointercancel', release);
+surface.addEventListener('click', e => { if(suppressClick){ e.stopPropagation(); e.preventDefault(); } }, true);
+
+let rz, lastW = innerWidth;
+addEventListener('resize', () => {
+  clearTimeout(rz);
+  rz = setTimeout(() => {
+    // mobile browsers fire resize when the address bar hides; only react to real width changes
+    if(state === 'pile' && innerWidth !== lastW) restore(goGenial, true);
+    else if(state === 'genial') drawMeasure(true);
+    lastW = innerWidth;
+    sizeInk();
+  }, 180);
+});
+
+/* ---------- the photo ---------- */
+// the back side isn't visible yet, so it doesn't compete with the front photo while the page loads
+const back = $('.side.b img');
+function loadBack(){
+  if(!back.dataset.src) return;
+  back.previousElementSibling.srcset = back.previousElementSibling.dataset.srcset;
+  back.srcset = back.dataset.srcset; back.src = back.dataset.src; delete back.dataset.src;
+}
+addEventListener('load', () => (window.requestIdleCallback || setTimeout)(loadBack));
+$('#pola').addEventListener('pointerenter', loadBack, {once:true});
+$('#pola').addEventListener('click', () => { loadBack(); $('#pola').classList.toggle('flipped'); });
+
+/* =========================================================
+   markers: draw on the board
+   ========================================================= */
+const ink = $('#ink'), ictx = ink.getContext('2d');
+let pen = null, drawing = null;
+function sizeInk(){
+  const dpr = Math.min(devicePixelRatio || 1, 2), w = surface.clientWidth, h = surface.clientHeight;
+  if(ink.width === Math.round(w*dpr) && ink.height === Math.round(h*dpr)) return;
+  const old = document.createElement('canvas'); old.width = ink.width; old.height = ink.height;
+  if(ink.width) old.getContext('2d').drawImage(ink, 0, 0);
+  ink.width = Math.round(w*dpr); ink.height = Math.round(h*dpr);
+  ink.style.width = w + 'px'; ink.style.height = h + 'px';
+  ictx.setTransform(1,0,0,1,0,0);
+  if(old.width) ictx.drawImage(old, 0, 0);
+  ictx.setTransform(dpr,0,0,dpr,0,0);
+}
+sizeInk();
+if('ResizeObserver' in window) new ResizeObserver(() => sizeInk()).observe(surface);
+document.querySelectorAll('.marker').forEach(m => m.addEventListener('click', () => {
+  const was = m.classList.contains('on');
+  document.querySelectorAll('.marker').forEach(x => { x.classList.remove('on'); x.setAttribute('aria-pressed', 'false'); });
+  if(was){ pen = null; surface.classList.remove('pen'); }
+  else { m.classList.add('on'); m.setAttribute('aria-pressed', 'true'); pen = m.dataset.c; surface.classList.add('pen'); }
+}));
+ink.addEventListener('pointerdown', e => {
+  if(!pen) return;
+  const p = pt(e); drawing = {id:e.pointerId, last:p, mid:null};
+  ink.setPointerCapture(e.pointerId);
+  ictx.strokeStyle = pen; ictx.fillStyle = pen; ictx.lineWidth = 4.5; ictx.lineCap = 'round'; ictx.lineJoin = 'round'; ictx.globalAlpha = .92;
+  ictx.beginPath(); ictx.arc(p.x, p.y, 2.2, 0, 7); ictx.fill();
+});
+ink.addEventListener('pointermove', e => {
+  if(!drawing || e.pointerId !== drawing.id) return;
+  const p = pt(e), q = drawing.last, m = {x:(p.x+q.x)/2, y:(p.y+q.y)/2};
+  ictx.beginPath(); ictx.moveTo((drawing.mid||q).x, (drawing.mid||q).y);
+  ictx.quadraticCurveTo(q.x, q.y, m.x, m.y); ictx.stroke();
+  drawing.mid = m; drawing.last = p;
+});
+const endDraw = () => { drawing = null; };
+ink.addEventListener('pointerup', endDraw); ink.addEventListener('pointercancel', endDraw);
+$('#eraser').addEventListener('click', () => {
+  const w = surface.clientWidth, h = surface.clientHeight;
+  if(reduce){ ictx.clearRect(0,0,w,h); return; }
+  let x = 0;
+  const wipe = () => { ictx.clearRect(x-10, 0, w/14+20, h); x += w/14; if(x < w + 20) requestAnimationFrame(wipe); };
+  wipe();
+});
+
+applyLang();
+})();
+</script>
+</body>
+</html>
