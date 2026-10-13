@@ -69,7 +69,7 @@ a{color:inherit}
    "tag   tag   tag   note1 photo photo"
    "books note2 .     note3 contact contact"}
 .ghost{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.065}
-#ink{position:absolute;inset:0;z-index:4;pointer-events:none;touch-action:none}
+#ink{position:absolute;inset:0;z-index:5;pointer-events:none;touch-action:none}
 .surface.pen #ink{pointer-events:auto;cursor:crosshair}
 #measure{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;overflow:visible}
 
@@ -78,7 +78,11 @@ a{color:inherit}
   transform:translate(var(--dx,0px),var(--dy,0px)) rotate(var(--r,0deg));
   transition:transform .85s cubic-bezier(.3,1.35,.4,1),filter .2s}
 .surface.genial .obj{transform:none}
-.surface.pile .obj{transition:filter .2s;cursor:grab}
+.surface.pile{touch-action:none;overflow:hidden}
+.surface.pile .obj{transition:filter .2s;cursor:grab;will-change:transform}
+.board.jar{height:calc(100svh - 2*var(--pad));min-height:0}
+.board.jar .surface{min-height:0}
+html.jar{overflow:hidden;overscroll-behavior:none}
 .obj.lift{filter:drop-shadow(0 22px 18px rgba(30,20,40,.35));cursor:grabbing}
 img{-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none}
 
@@ -106,7 +110,6 @@ img{-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none}
 #ringG path{stroke:var(--blue)} #ringR path{stroke:var(--red)}
 
 .controls{--coin:clamp(96px,8vw,120px);--cg:clamp(14px,1.8vw,24px);display:flex;align-items:center;gap:var(--cg);margin-top:clamp(18px,2vw,28px)}
-.surface.pile .controls{padding-left:calc(var(--coin) + var(--cg))}
 .coin{display:block;flex:none;width:var(--coin);aspect-ratio:1;border-radius:50%;perspective:600px}
 .coin .hop{display:block;width:100%;height:100%}
 .coin .inner{display:block;position:relative;width:100%;height:100%;transform-style:preserve-3d}
@@ -127,9 +130,10 @@ img{-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none}
   transition:transform .12s,box-shadow .12s;font-variation-settings:"INFM" 0,"BNCE" 0;white-space:nowrap}
 .cta-btn:active{transform:translate(3px,4px);box-shadow:0 0 0 var(--ink)}
 .cta-btn svg{width:22px;height:22px;flex:none}
-.cta-sub{font-size:clamp(15px,1.15vw,17px);color:var(--graphite);margin-top:10px;max-width:30ch;line-height:1.3;min-height:2.6em}
-.tally{display:none;grid-template-columns:auto 1fr;gap:2px 12px;align-items:center;margin-top:10px;font-size:15px;color:var(--graphite)}
-.tally.has{display:grid}
+.cta-sub{font-size:clamp(15px,1.15vw,17px);color:var(--graphite);margin-top:10px;max-width:30ch;line-height:1.3;min-height:3.9em}
+.tally{display:grid;visibility:hidden;grid-template-columns:auto 1fr;gap:2px 12px;align-items:center;margin-top:10px;font-size:15px;color:var(--graphite)}
+.tally.has{visibility:visible}
+.tally svg{max-width:100%}
 .tally svg{height:22px;overflow:visible}
 .tally line{stroke-width:2.4;stroke-linecap:round}
 .tally .g line{stroke:var(--blue)} .tally .r line{stroke:var(--red)}
@@ -346,7 +350,6 @@ img{-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none}
 const $ = s => document.querySelector(s);
 const surface = $('#surface');
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const coarse = matchMedia('(pointer: coarse)').matches;
 $('#yr').textContent = new Date().getFullYear();
 const store = {
   get(k,d){ try{ const v=localStorage.getItem('ee:'+k); return v==null?d:JSON.parse(v); }catch(e){ return d; } },
@@ -362,7 +365,6 @@ const T = {
        sub0:'Sie entscheidet, ob diese Seite gerade genial ist oder komplett random.',
        subG:'Genial. Alles sitzt auf dem Raster, auf den Pixel genau.',
        subR:'Komplett random. Alles darf angefasst, geworfen und gestapelt werden.',
-       subRt:'Komplett random. Halt irgendwas gedrückt, dann wirf es durch die Gegend.',
        cap1:'ich, an einem normalen Tag', cap2:'ich, an einem genialen Tag', turn:'umdrehen ↻', photoLabel:'Foto umdrehen',
        alt1:'Eugen am Schreibtisch, Kaffee in der Hand', alt2:'Eugen unter einem Neonschild mit der Aufschrift Quantum Engineer',
        note1:'Guter Code funktioniert irgendwie ☺', note2:'Realität ist ein Feature, kein Bug.', note3:'ship it :)',
@@ -373,7 +375,6 @@ const T = {
        sub0:'It decides whether this page is genial right now, or komplett random.',
        subG:'Genial. Everything sits on the grid, pixel-perfect.',
        subR:'Komplett random. Grab anything, throw it, stack it.',
-       subRt:'Komplett random. Press and hold anything, then throw it.',
        cap1:'me, on a normal day', cap2:'me, on a genial day', turn:'flip ↻', photoLabel:'Flip the photo',
        alt1:'Eugen at his desk, coffee in hand', alt2:'Eugen under a neon sign that reads Quantum Engineer',
        note1:'Good code somehow works ☺', note2:'Reality is a feature, not a bug.', note3:'ship it :)',
@@ -405,7 +406,7 @@ document.querySelectorAll('.lang button').forEach(b => b.addEventListener('click
 let state = 'board', lastRes = null;
 const tally = store.get('tally', {g:0, r:0});
 function setSub(){
-  $('#ctaSub').textContent = lastRes==='genial' ? t('subG') : lastRes==='random' ? t(coarse ? 'subRt' : 'subR') : t('sub0');
+  $('#ctaSub').textContent = lastRes==='genial' ? t('subG') : lastRes==='random' ? t('subR') : t('sub0');
   $('#flipBtn span').textContent = lastRes ? t('again') : t('flip');
 }
 
@@ -458,6 +459,8 @@ function flip(){
   const res = flips===0 ? 'random' : (Math.random() < .5 ? 'genial' : 'random');
   flips++;
   const ready = res==='random' ? loadMatter().catch(() => null) : null;
+  // the jar is the top of the page, so get there while the coin is still in the air
+  if(res==='random' && state!=='pile' && scrollY > 0) scrollTo({top:0, behavior: reduce ? 'auto' : 'smooth'});
   const target = (res==='genial'?0:180) + 360*(4 + Math.floor(Math.random()*2));
   const from = coinDeg % 360; coinDeg = target;
   const dur = reduce ? 10 : 1100;
@@ -541,63 +544,88 @@ function drawMeasure(instant){
 
 /* =========================================================
    RANDOM: real physics. Everything falls, you can throw it.
+   Objects never leave the layout: the engine only drives their
+   transforms, so nothing around them can shift or snap.
+   The board shrinks to exactly one screen ("jar"), things further
+   down the page pour in from the top, and everything is scaled
+   just enough that the whole pile fits.
    ========================================================= */
-const STEP = 1000/60;
-let acc = 0, engine = null, bodies = [], raf = 0, last = 0, drag = null, suppressClick = false, zTop = 10;
+const STEP = 1000/60, FILL = .5, MIN_SCALE = .55, GROW_MS = 500;
+const board = $('#board'), root = document.documentElement;
+let acc = 0, engine = null, bodies = [], raf = 0, last = 0, drag = null, suppressClick = false, lifted = null;
+let scaleTo = 1, scaleT0 = 0, settle = null;
 
 function objs(){ return [...surface.querySelectorAll('.obj')].filter(el => el.offsetParent !== null); }
 function px(v){ return parseFloat(v) || 0; }
+function layoutBox(el){
+  let l = 0, tp = 0, n = el;
+  while(n && n !== surface){ l += n.offsetLeft; tp += n.offsetTop; n = n.offsetParent; }
+  return {l, t:tp, w:el.offsetWidth, h:el.offsetHeight};
+}
+const ease = x => 1 - Math.pow(1 - x, 3);
+function curScale(now = performance.now()){
+  const k = Math.min(1, (now - scaleT0) / GROW_MS);
+  return 1 + (scaleTo - 1) * ease(k);
+}
+function paint(b, s){
+  b.el.style.transform = `translate(${(b.position.x - b.cx).toFixed(2)}px,${(b.position.y - b.cy).toFixed(2)}px) rotate(${b.angle.toFixed(4)}rad) scale(${s.toFixed(4)})`;
+}
 
 function collapse(){
   const {Engine, Bodies, Body, Composite} = M;
+  finishRestore();
   measure.innerHTML = '';
-  const cs = getComputedStyle(surface);
-  surface.style.height = surface.offsetHeight + 'px';
-  surface.style.gridTemplateRows = cs.gridTemplateRows;
-  const genial = state === 'genial';
+  if(scrollY) scrollTo(0, 0);
+  const fromGenial = state === 'genial';
+  // freeze the grid so the rows can't move while the board is a jar
+  surface.style.gridTemplateRows = getComputedStyle(surface).gridTemplateRows;
   const list = objs().map(el => {
     const ecs = getComputedStyle(el);
-    let l = 0, tp = 0, n = el;
-    while(n && n !== surface){ l += n.offsetLeft; tp += n.offsetTop; n = n.offsetParent; }
-    return {el, w:el.offsetWidth, h:el.offsetHeight, l, t:tp,
-      dx: genial ? 0 : px(ecs.getPropertyValue('--dx')), dy: genial ? 0 : px(ecs.getPropertyValue('--dy')),
-      r: genial ? 0 : px(ecs.getPropertyValue('--r'))};
+    return {el, ...layoutBox(el),
+      dx: fromGenial ? 0 : px(ecs.getPropertyValue('--dx')), dy: fromGenial ? 0 : px(ecs.getPropertyValue('--dy')),
+      r: fromGenial ? 0 : px(ecs.getPropertyValue('--r'))};
   });
-  list.forEach(o => {
-    const s = o.el.style;
-    s.position = 'absolute'; s.gridArea = 'auto'; s.left = o.l + 'px'; s.top = o.t + 'px';
-    s.width = o.w + 'px'; s.height = o.h + 'px'; s.margin = '0';
-    s.transform = `translate(${o.dx}px,${o.dy}px) rotate(${o.r}deg)`;
-  });
+  list.forEach(o => { o.el.style.transform = `translate(${o.dx}px,${o.dy}px) rotate(${o.r}deg) scale(1)`; });
   surface.classList.remove('board-state','genial');
-  surface.classList.add('pile'); state = 'pile';
+  surface.classList.add('pile'); board.classList.add('jar'); root.classList.add('jar');
+  state = 'pile';
+
+  const W = surface.clientWidth, H = surface.clientHeight, TH = 400;
+  // size things so the settled pile stays below the tagline and the flip button
+  const tag = layoutBox($('.tagbox')), free = Math.max(H - (tag.t + tag.h) - 12, H*.4);
+  const area = list.reduce((s, o) => s + o.w*o.h, 0);
+  scaleTo = Math.max(MIN_SCALE, Math.min(1, Math.sqrt(FILL * W * free / area)));
+  scaleT0 = performance.now();
+  const bottom = Math.max(...list.map(o => o.t + o.h));
+  const ceiling = -(bottom + H);
 
   engine = Engine.create({enableSleeping:true});
   engine.gravity.y = 1.15;
-  const W = surface.clientWidth, H = surface.clientHeight, TH = 200;
   const walls = [
     Bodies.rectangle(W/2, H + TH/2, W*3, TH, {isStatic:true, friction:.9}),
-    Bodies.rectangle(-TH/2, H/2 - H, TH, H*4, {isStatic:true}),
-    Bodies.rectangle(W + TH/2, H/2 - H, TH, H*4, {isStatic:true}),
-    Bodies.rectangle(W/2, -H*1.5, W*3, TH, {isStatic:true})
+    Bodies.rectangle(-TH/2, (ceiling + H)/2, TH, H - ceiling + TH*2, {isStatic:true}),
+    Bodies.rectangle(W + TH/2, (ceiling + H)/2, TH, H - ceiling + TH*2, {isStatic:true}),
+    Bodies.rectangle(W/2, ceiling - TH/2, W*3, TH, {isStatic:true})
   ];
   bodies = list.map(o => {
     const cx = o.l + o.w/2, cy = o.t + o.h/2;
+    // anything that doesn't fit on this screen pours in from above
+    const below = cy + o.h*scaleTo/2 > H - 4;
+    const y = below ? cy - bottom - 40 : cy + o.dy;
     const isLetter = o.el.classList.contains('mag');
+    const w = o.w*scaleTo, h = (isLetter ? o.h*.82 : o.h)*scaleTo;
     const opts = {angle:o.r*Math.PI/180, restitution:.2, friction:.6, frictionAir:.012, density: isLetter ? .003 : .0012};
     const b = o.el === coin
-      ? Bodies.circle(cx + o.dx, cy + o.dy, o.w/2, {...opts, restitution:.45})
-      : Bodies.rectangle(cx + o.dx, cy + o.dy, o.w, isLetter ? o.h*.82 : o.h, {...opts, chamfer:{radius:Math.min(6, o.w/5, o.h/5)}});
+      ? Bodies.circle(cx + o.dx, y, w/2, {...opts, restitution:.45})
+      : Bodies.rectangle(cx + o.dx, y, w, h, {...opts, chamfer:{radius:Math.min(6, w/5, h/5)}});
     b.el = o.el; b.cx = cx; b.cy = cy;
-    Body.setVelocity(b, {x:(Math.random()-.5)*4, y:-Math.random()*4});
+    Body.setVelocity(b, {x:(Math.random()-.5)*4, y:-Math.random()*3});
     Body.setAngularVelocity(b, (Math.random()-.5)*.14);
     return b;
   });
   Composite.add(engine.world, [...walls, ...bodies]);
   last = performance.now(); acc = 0;
   cancelAnimationFrame(raf); raf = requestAnimationFrame(step);
-  const sb = surface.getBoundingClientRect().bottom;
-  if(sb > innerHeight + 40) setTimeout(() => scrollTo({top: scrollY + sb - innerHeight + 80, behavior: reduce?'auto':'smooth'}), 450);
 }
 
 function step(now){
@@ -605,100 +633,79 @@ function step(now){
   let n = 0;
   while(acc >= STEP && n < 4){ M.Engine.update(engine, STEP); acc -= STEP; n++; }
   if(n === 4) acc = 0;
-  for(const b of bodies){
-    if(b.isSleeping) continue;
-    b.el.style.transform = `translate(${(b.position.x - b.cx).toFixed(2)}px,${(b.position.y - b.cy).toFixed(2)}px) rotate(${b.angle.toFixed(4)}rad)`;
-  }
+  const s = curScale(now), growing = now - scaleT0 < GROW_MS + 50;
+  for(const b of bodies) if(growing || !b.isSleeping) paint(b, s);
   raf = requestAnimationFrame(step);
 }
 
 function shake(){
+  // the same kick on a phone would throw everything out of the jar
+  const f = Math.min(1, Math.sqrt(surface.clientHeight / 800));
   bodies.forEach(b => {
     M.Sleeping.set(b, false);
-    M.Body.setVelocity(b, {x:(Math.random()-.5)*22, y:-(10 + Math.random()*16)});
+    M.Body.setVelocity(b, {x:(Math.random()-.5)*22*f, y:-(10 + Math.random()*14)*f});
     M.Body.setAngularVelocity(b, (Math.random()-.5)*.5);
   });
 }
 
 function teardown(){
   cancelAnimationFrame(raf); raf = 0;
-  if(hold){ clearTimeout(hold.timer); hold = null; }
   if(drag){ drag.b.el.classList.remove('lift'); drag = null; }
   if(engine){ M.Composite.clear(engine.world); M.Engine.clear(engine); }
   engine = null;
 }
-function cleanStyles(el){ ['position','left','top','width','height','margin','transition','transform','z-index','grid-area'].forEach(p => el.style.removeProperty(p)); }
 
 function restore(done, instant){
-  const list = bodies; teardown();
+  const list = bodies, s = curScale(); teardown();
   list.forEach(b => {
-    const a = ((b.angle % (2*Math.PI)) + 3*Math.PI) % (2*Math.PI) - Math.PI;
-    b.el.style.transform = `translate(${b.position.x - b.cx}px,${b.position.y - b.cy}px) rotate(${a}rad)`;
+    // unwind to the nearest upright angle so nothing spins around on the way back
+    b.angle = ((b.angle % (2*Math.PI)) + 3*Math.PI) % (2*Math.PI) - Math.PI;
+    paint(b, s);
   });
-  surface.getBoundingClientRect();
-  const dur = (instant || reduce) ? 0 : 900;
-  list.forEach((b,i) => {
-    b.el.style.transition = dur ? `transform ${dur}ms cubic-bezier(.3,1.25,.4,1) ${i*22}ms` : 'none';
-    b.el.style.transform = 'translate(0px,0px) rotate(0rad)';
-  });
-  surface.classList.remove('pile');
+  surface.classList.remove('pile'); board.classList.remove('jar'); root.classList.remove('jar');
   surface.classList.add('genial'); state = 'genial';
-  setTimeout(() => {
-    list.forEach(b => cleanStyles(b.el));
-    surface.style.removeProperty('height'); surface.style.removeProperty('grid-template-rows');
-    bodies = [];
-    done && done();
-  }, dur ? dur + list.length*22 + 30 : 0);
-  if(!instant && !reduce){
-    const top = surface.getBoundingClientRect().top;
-    if(top < -40) scrollTo({top: scrollY + top - 20, behavior:'smooth'});
-  }
+  surface.getBoundingClientRect();
+  const dur = (instant || reduce) ? 0 : 900, stagger = dur ? 18 : 0;
+  list.forEach((b,i) => {
+    b.el.style.transition = dur ? `transform ${dur}ms cubic-bezier(.3,1.2,.4,1) ${i*stagger}ms` : 'none';
+    b.el.style.transform = 'translate(0px,0px) rotate(0rad) scale(1)';
+  });
+  lifted = null; bodies = [];
+  const fn = landed => {
+    list.forEach(b => ['transition','transform','z-index'].forEach(p => b.el.style.removeProperty(p)));
+    surface.style.removeProperty('grid-template-rows');
+    landed && done && done();
+  };
+  settle = {fn, t:setTimeout(() => { settle = null; fn(true); }, dur ? dur + list.length*stagger + 30 : 0)};
 }
+// a new collapse can start while things are still flying back: finish that first
+function finishRestore(){ if(settle){ clearTimeout(settle.t); settle.fn(false); settle = null; } }
 
 /* ---------- grabbing and throwing ---------- */
 function pt(e){ const r = surface.getBoundingClientRect(); return {x:e.clientX - r.left, y:e.clientY - r.top}; }
-// mouse grabs right away; a finger has to press and hold, so swiping over the pile still scrolls the page
-const HOLD = 220;
-let hold = null;
 surface.addEventListener('pointerdown', e => {
-  if(state !== 'pile' || !engine || e.button > 0) return;
+  if(state !== 'pile' || !engine || drag || e.button > 0) return;
   const el = e.target.closest('.obj'); if(!el) return;
   const b = bodies.find(b => b.el === el); if(!b) return;
-  if(e.pointerType === 'touch'){
-    if(drag || hold) return;
-    hold = {b, id:e.pointerId, sx:e.clientX, sy:e.clientY, clientX:e.clientX, clientY:e.clientY};
-    hold.timer = setTimeout(() => { const h = hold; hold = null; if(engine) grab(h.b, h, h.id, true); }, HOLD);
-    return;
-  }
-  grab(b, e, e.pointerId, false);
-});
-function grab(b, at, id, touch){
-  const p = pt(at);
+  const p = pt(e);
   M.Sleeping.set(b, false);
   const c = M.Constraint.create({pointA:p, bodyB:b, pointB:{x:p.x - b.position.x, y:p.y - b.position.y}, stiffness:.18, damping:.1, length:0});
   M.Composite.add(engine.world, c);
-  b.el.style.zIndex = ++zTop; b.el.classList.add('lift');
-  drag = {c, b, sx:at.clientX, sy:at.clientY, moved:false, id, touch};
-  if(touch && navigator.vibrate) navigator.vibrate(8);
-}
+  // the held thing goes on top, the one before stays just under it; the flip button always stays above both
+  if(lifted && lifted !== el) lifted.style.zIndex = 3;
+  el.style.zIndex = 4; lifted = el; el.classList.add('lift');
+  drag = {c, b, sx:e.clientX, sy:e.clientY, moved:false, id:e.pointerId};
+});
 addEventListener('pointermove', e => {
-  if(hold && e.pointerId === hold.id){
-    hold.clientX = e.clientX; hold.clientY = e.clientY;
-    if(Math.hypot(e.clientX-hold.sx, e.clientY-hold.sy) > 8){ clearTimeout(hold.timer); hold = null; }
-    return;
-  }
   if(!drag || e.pointerId !== drag.id) return;
   drag.c.pointA = pt(e);
   if(!drag.moved && Math.hypot(e.clientX-drag.sx, e.clientY-drag.sy) > 6) drag.moved = true;
   if(drag.moved) e.preventDefault();
 }, {passive:false});
-// once a finger holds something, the page must not scroll under it
-surface.addEventListener('touchmove', e => { if(drag && drag.touch) e.preventDefault(); }, {passive:false});
 surface.addEventListener('contextmenu', e => { if(state === 'pile') e.preventDefault(); });
 const release = e => {
-  if(hold && e.pointerId === hold.id){ clearTimeout(hold.timer); hold = null; return; }
   if(!drag || e.pointerId !== drag.id) return;
-  if(drag.moved || drag.touch){ suppressClick = true; setTimeout(() => suppressClick = false, 60); }
+  if(drag.moved){ suppressClick = true; setTimeout(() => suppressClick = false, 60); }
   if(engine) M.Composite.remove(engine.world, drag.c);
   drag.b.el.classList.remove('lift');
   drag = null;
@@ -736,6 +743,7 @@ $('#pola').addEventListener('click', () => { loadBack(); $('#pola').classList.to
 const ink = $('#ink'), ictx = ink.getContext('2d');
 let pen = null, drawing = null;
 function sizeInk(){
+  if(state === 'pile') return; // the jar is temporary; keep drawings that are below it
   const dpr = Math.min(devicePixelRatio || 1, 2), w = surface.clientWidth, h = surface.clientHeight;
   if(ink.width === Math.round(w*dpr) && ink.height === Math.round(h*dpr)) return;
   const old = document.createElement('canvas'); old.width = ink.width; old.height = ink.height;
